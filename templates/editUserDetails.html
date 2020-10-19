@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% set active_page = 'editUser' %}
+
+{% block title %}
+    Edit Details -
+{% endblock %}
+
+{% block body %}
+
+    <div><h1>User details</h1>
+        <table class = "table">
+            <tr>
+                <td>Forename</td>
+                <td>{{ session["forename"] }}</td>
+            </tr>
+            <tr>
+                <td>Surname</td>
+                <td>{{ session["surname"] }}</td>
+            </tr>
+            <tr>
+                <td>Email Address</td>
+                <td>{{ session["email"] }}</td>
+            </tr>
+            <tr>
+                <td>Username</td>
+                <td>{{ session["username"] }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-7 my-5"><!Set width of form>
+            <h1>Edit Details</h1><hr>
+            <form method="POST" action="{{ url_for('editUserDetails') }}">
+
+                 <div class="form-group">
+                    <label>New Forename:</label>
+                    <input class="form-control" type="text" name="forename" maxlength="50" minlength="1">
+                </div>
+                 <div class="form-group">
+                    <label>New Surname:</label>
+                    <input class="form-control" type="text" name="surname" maxlength="50" minlength="1">
+                </div>
+                 <div class="form-group">
+                    <label>New Email:</label>
+                    <input class="form-control" type="text" name="email" maxlength="50" minlength="1">
+                </div>
+                <div class="form-group">
+                    <label>New Username:</label>
+                    <input class="form-control" type="text" name="username" maxlength="50" minlength="1">
+                </div>
+
+                <hr>
+                <input class="btn btn-primary form-control" type="submit" value="Submit">
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-7 my-5"><!Set width of form>
+            <form method="POST" action="{{ url_for('changePassword') }}">
+                <input class="btn btn-primary form-control" type="submit" value="Change Password">
+            </form>
+            <hr>
+            <form method="POST" action="{{ url_for('deleteUser') }}">
+                <input class="btn btn-primary form-control" type="submit" value="Delete User">
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}
