@@ -7,14 +7,14 @@ from DB import manipulateDB
 app = Flask(__name__)
 manipulateDB.innitializeUser_DB()
 
-DB_Location = "DB/User_Data.db"
+
 app.config["SECRET_KEY"] = "secretkey"
 app.config["SESSION_PERMANENT"] = False
-
 
 # using code to hash passwords with salt https://www.pythoncentral.io/hashing-strings-with-python/
 import uuid
 import hashlib
+
 
 def hash_password(password):
     # uuid is used to generate a random number
@@ -31,10 +31,8 @@ def check_password(hashed_password, entered_password):
         return False
 
 
-
 # session stores values in a dict
 def loggedIn():
-
     if session.get("user_id"):
         return True
     else:
@@ -44,7 +42,8 @@ def loggedIn():
 def refreshSession(userID):
     data = (userID,)
 
-    with manipulateDB.openDB(DB_Location) as db:
+    # Kept SQL statement to not bother changing select function just to cater for this function.
+    with manipulateDB.openDB(manipulateDB.DB_Location) as db:
         db.execute("SELECT username, forename, surname, email FROM Users WHERE userID = ?", data)
         user = db.fetchone()
 
@@ -56,16 +55,20 @@ def refreshSession(userID):
 
 
 def validLogin(userID):
-
     refreshSession(userID)
     flash("Correct Password, Welcome " + session.get("forename"), "success")
     return render_template('userPage.html')
 
-def vertifyUniqueEntry(entry, entryType):
 
 
 
-
+# WEDNESDAY
+# fix sql in login to use functions
+# fix change details to implement search for existing email or username
+# Forget password change and delete user for now
+# Focus on implementing storing cards next
+# Maybe blueprints
+# Document using sphinx at some point
 
 
 @app.route("/")
@@ -83,16 +86,10 @@ def registerUser():
         if check_password(passwordHash, request.form.get("confirm_password")) == True:
 
             # Check email is not already being used
-            # Question, why does it only work when email is a tuple as well as email tuple? lol
-            email = (request.form.get("email"),)
-
-            emailTuple = (email[0],)
             # search db for email
-            with manipulateDB.openDB(DB_Location) as db:
-                db.execute("SELECT COUNT(username) FROM Users WHERE email = ?", emailTuple)
-                emailExists = db.fetchone()[0]
+            email = request.form.get("email")
 
-            if emailExists != 0:
+            if manipulateDB.countEntry(email, "email", "email", "=") != 0:
                 flash("Email entered is already registered to a user.", "danger")
                 return render_template("register.html")
 
@@ -105,25 +102,19 @@ def registerUser():
                 username = [forename + surname, ]
                 seachUsernameInput = (username[0] + '%',)
 
-                with manipulateDB.openDB(DB_Location) as db:
-                    db.execute("SELECT COUNT(username) FROM Users WHERE username LIKE ?", seachUsernameInput)
-                    data = db.fetchone()[0]
-                    db.execute("SELECT COUNT(userID) FROM Users")
-                    userID = db.fetchone()[0]
+                countData = manipulateDB.countEntry(seachUsernameInput[0], "username", "username", "LIKE")
+                countString = str(countData)
 
-                usernameOccurence = str(data)
+                userID = manipulateDB.countEntry(None, "userID", "userID", "ALL")
 
-                if data > 0:
-                    username[0] = username[0] + usernameOccurence
+                if countData > 0:
+                    username[0] = username[0] + countString
 
                 userID = userID + 1
+                data = (username[0], passwordHash, forename, surname, email, userID)
 
-                data = (username[0], passwordHash, forename, surname, email[0], userID)
-
-                with manipulateDB.openDB(DB_Location) as db:
-                    db.execute(
-                        "INSERT INTO Users (username, password, forename, surname, email, userID) VALUES (?,?,?,?,?,?)",
-                        data)
+                # Insert New User into DB
+                manipulateDB.insertNewUser(data)
 
                 flash("User Created, note down your generated username: " + username[0], "success")
                 return redirect(url_for("loginUser"))
@@ -139,52 +130,35 @@ def loginUser():
     if request.method == "POST":
 
         # Different methods of logging in, just for practice either by email or username.
+        usernameOrEmail = request.form.get("username")
 
-        usernameOrEmail = (str(request.form.get("username")),)
-
-        if usernameOrEmail[0].find("@") != -1:
+        if usernameOrEmail.find("@") != -1:
 
             # Log in by email
-            with manipulateDB.openDB(DB_Location) as db:
-                db.execute("SELECT COUNT(username) FROM Users WHERE email = ?", usernameOrEmail)
-                data = db.fetchone()[0]
+            occurrence = manipulateDB.countEntry(usernameOrEmail, "username", "email", "=")
 
-            if data == 0:
+            if occurrence == 0:
                 # No username or email found
                 flash("Email not registered.", "danger")
                 return render_template('login.html')
 
             else:
-                with manipulateDB.openDB(DB_Location) as db:
-                    db.execute("SELECT password FROM Users WHERE email = ?", usernameOrEmail)
-                    storedHash = db.fetchone()[0]
-                    db.execute("SELECT userID FROM Users WHERE email = ?", usernameOrEmail)
-                    userID = db.fetchone()[0]
-
-
-
-
-
-
+                storedHash = manipulateDB.selectDataFromDB(usernameOrEmail, "password", "email", "=")
+                userID = manipulateDB.selectDataFromDB(usernameOrEmail, "userID", "email", "=")
 
         else:
 
-            with manipulateDB.openDB(DB_Location) as db:
-                db.execute("SELECT COUNT(username) FROM Users WHERE username = ?", usernameOrEmail)
-                data = db.fetchone()[0]
+            # Log in by username
+            occurrence = manipulateDB.countEntry(usernameOrEmail, "username", "username", "=")
 
-            if data == 0:
+            if occurrence == 0:
                 # No username or email found
                 flash("Incorrect username.", "danger")
                 return render_template('login.html')
 
             else:
-                with manipulateDB.openDB(DB_Location) as db:
-                    db.execute("SELECT password FROM Users WHERE username = ?", usernameOrEmail)
-                    storedHash = db.fetchone()[0]
-                    db.execute("SELECT userID FROM Users WHERE username = ?", usernameOrEmail)
-                    userID = db.fetchone()[0]
-
+                storedHash = manipulateDB.selectDataFromDB(usernameOrEmail, "password", "username", "=")
+                userID = manipulateDB.selectDataFromDB(usernameOrEmail, "userID", "username", "=")
 
         if check_password(storedHash, request.form.get("password")) == True:
 
@@ -211,23 +185,37 @@ def editUserDetails():
             forename = request.form.get("forename")
             surname = request.form.get("surname")
 
+            # Check username and email are not already present in the DB
 
+            if username != '':
+
+                occurrence = manipulateDB.countEntry(username, "username", "username", "=")
+
+                if occurrence > 0:
+                    flash("Error - Username already registered.", "danger")
+                    username = ""
+
+            if email != '':
+
+                occurrence = manipulateDB.countEntry(email, "email", "email", "=")
+
+                if occurrence > 0:
+                    flash("Error - Email already registered.", "danger")
+                    email = ""
+
+            entries = []
+            columns = []
             # Iterate across array to save retyping code
             infoArray = [["username", username], ["email", email], ["forename", forename], ["surname", surname]]
-            print(infoArray)
 
             for index in range(0, len(infoArray)):
 
                 if infoArray[index][1] != '':
+                    columns.append(infoArray[index][0])
+                    entries.append(infoArray[index][1])
 
-                    data = (infoArray[index][1], session.get("user_id"),)
-
-                    with manipulateDB.openDB(DB_Location) as db:
-                        db.execute("UPDATE Users SET {} = ? WHERE userID = ?".format(infoArray[index][0]), data)
-
-                    session[infoArray[index][0]] = infoArray[index][1]
-                    flash(infoArray[index][0] + " changed successfully to " + infoArray[index][1], "success")
-
+            manipulateDB.updateData(entries, columns)
+            refreshSession(session.get("user_id"))
 
             return render_template("editUserDetails.html")
 
