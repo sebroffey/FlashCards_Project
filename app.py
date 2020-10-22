@@ -2,11 +2,10 @@ from itertools import count
 
 from flask import Flask, render_template, request, flash, redirect, url_for, session
 import _sqlite3
-from DB import manipulateDB
+from DB import DB
 
 app = Flask(__name__)
-manipulateDB.innitializeUser_DB()
-
+DB.innitializeUser_DB()
 
 app.config["SECRET_KEY"] = "secretkey"
 app.config["SESSION_PERMANENT"] = False
@@ -39,13 +38,13 @@ def loggedIn():
         return False
 
 
-def refreshSession(userID):
-    data = (userID,)
+def userNotLoggedIn():
+    flash("Please log in.", "danger")
+    return render_template("login.html")
 
-    # Kept SQL statement to not bother changing select function just to cater for this function.
-    with manipulateDB.openDB(manipulateDB.DB_Location) as db:
-        db.execute("SELECT username, forename, surname, email FROM Users WHERE userID = ?", data)
-        user = db.fetchone()
+
+def refreshSession(userID):
+    user = DB.selectAllUserData(userID)
 
     session["username"] = user[0]
     session["forename"] = user[1]
@@ -60,11 +59,9 @@ def validLogin(userID):
     return render_template('userPage.html')
 
 
-
-
 # WEDNESDAY
-# fix sql in login to use functions
-# fix change details to implement search for existing email or username
+
+
 # Forget password change and delete user for now
 # Focus on implementing storing cards next
 # Maybe blueprints
@@ -89,7 +86,7 @@ def registerUser():
             # search db for email
             email = request.form.get("email")
 
-            if manipulateDB.countEntry(email, "email", "email", "=") != 0:
+            if DB.countEntryInUsers(email, "email", "email", "=") != 0:
                 flash("Email entered is already registered to a user.", "danger")
                 return render_template("register.html")
 
@@ -102,10 +99,10 @@ def registerUser():
                 username = [forename + surname, ]
                 seachUsernameInput = (username[0] + '%',)
 
-                countData = manipulateDB.countEntry(seachUsernameInput[0], "username", "username", "LIKE")
+                countData = DB.countEntryInUsers(seachUsernameInput[0], "username", "username", "LIKE")
                 countString = str(countData)
 
-                userID = manipulateDB.countEntry(None, "userID", "userID", "ALL")
+                userID = DB.countEntryInUsers(None, "userID", "userID", "ALL")
 
                 if countData > 0:
                     username[0] = username[0] + countString
@@ -114,7 +111,7 @@ def registerUser():
                 data = (username[0], passwordHash, forename, surname, email, userID)
 
                 # Insert New User into DB
-                manipulateDB.insertNewUser(data)
+                DB.insertNewUser(data)
 
                 flash("User Created, note down your generated username: " + username[0], "success")
                 return redirect(url_for("loginUser"))
@@ -135,7 +132,7 @@ def loginUser():
         if usernameOrEmail.find("@") != -1:
 
             # Log in by email
-            occurrence = manipulateDB.countEntry(usernameOrEmail, "username", "email", "=")
+            occurrence = DB.countEntryInUsers(usernameOrEmail, "username", "email", "=")
 
             if occurrence == 0:
                 # No username or email found
@@ -143,13 +140,13 @@ def loginUser():
                 return render_template('login.html')
 
             else:
-                storedHash = manipulateDB.selectDataFromDB(usernameOrEmail, "password", "email", "=")
-                userID = manipulateDB.selectDataFromDB(usernameOrEmail, "userID", "email", "=")
+                storedHash = DB.selectUserDataFromDB(usernameOrEmail, "password", "email", "=")
+                userID = DB.selectUserDataFromDB(usernameOrEmail, "userID", "email", "=")
 
         else:
 
             # Log in by username
-            occurrence = manipulateDB.countEntry(usernameOrEmail, "username", "username", "=")
+            occurrence = DB.countEntryInUsers(usernameOrEmail, "username", "username", "=")
 
             if occurrence == 0:
                 # No username or email found
@@ -157,8 +154,8 @@ def loginUser():
                 return render_template('login.html')
 
             else:
-                storedHash = manipulateDB.selectDataFromDB(usernameOrEmail, "password", "username", "=")
-                userID = manipulateDB.selectDataFromDB(usernameOrEmail, "userID", "username", "=")
+                storedHash = DB.selectUserDataFromDB(usernameOrEmail, "password", "username", "=")
+                userID = DB.selectUserDataFromDB(usernameOrEmail, "userID", "username", "=")
 
         if check_password(storedHash, request.form.get("password")) == True:
 
@@ -172,6 +169,15 @@ def loginUser():
             return render_template('login.html')
 
     return render_template('login.html')
+
+
+@app.route("/userPage")
+def userPage():
+    if loggedIn() == True:
+        return render_template("userPage.html")
+
+    else:
+        return userNotLoggedIn()
 
 
 @app.route("/editUserDetails", methods=["GET", "POST"])
@@ -189,7 +195,7 @@ def editUserDetails():
 
             if username != '':
 
-                occurrence = manipulateDB.countEntry(username, "username", "username", "=")
+                occurrence = DB.countEntryInUsers(username, "username", "username", "=")
 
                 if occurrence > 0:
                     flash("Error - Username already registered.", "danger")
@@ -197,7 +203,7 @@ def editUserDetails():
 
             if email != '':
 
-                occurrence = manipulateDB.countEntry(email, "email", "email", "=")
+                occurrence = DB.countEntryInUsers(email, "email", "email", "=")
 
                 if occurrence > 0:
                     flash("Error - Email already registered.", "danger")
@@ -214,7 +220,7 @@ def editUserDetails():
                     columns.append(infoArray[index][0])
                     entries.append(infoArray[index][1])
 
-            manipulateDB.updateData(entries, columns)
+            DB.updateUserData(entries, columns)
             refreshSession(session.get("user_id"))
 
             return render_template("editUserDetails.html")
@@ -222,8 +228,7 @@ def editUserDetails():
         else:
             return render_template("editUserDetails.html")
     else:
-        # not logged in
-        return render_template("login.html")
+        return userNotLoggedIn()
 
 
 @app.route("/changePassword")
@@ -233,13 +238,12 @@ def changePassword():
         if request.method == "POST":
 
             print()
-
+            # Not Finished This Link, will show a method error
 
         else:
             return render_template("editUserDetails.html")
     else:
-        # not logged in
-        return render_template("login.html")
+        return userNotLoggedIn()
 
 
 @app.route("/deleteUser")
@@ -249,13 +253,67 @@ def deleteUser():
         if request.method == "POST":
 
             print()
-
+            # Not Finished This Link, will show a method error
 
         else:
             return render_template("editUserDetails.html")
     else:
-        # not logged in
-        return render_template("login.html")
+        return userNotLoggedIn()
+
+
+@app.route("/editCardsPage/<int:cardID>", methods=["GET", "POST"])
+def editCardsPage(cardID):
+    if loggedIn() == True:
+
+        print("Here2")
+        userID = session.get("user_id")
+        cards = DB.selectUserCards(userID)
+        amountOfCards = DB.countUserCards(userID)
+
+        if request.method == "POST":
+
+            print("here3")
+            question = request.form.get("question")
+            answer = request.form.get("answer")
+
+            DB.updateUserCard(question, answer, cardID)
+
+            flash("Card Updated Successfully", "success")
+            return render_template("editCardsPage.html", cards=cards, amountOfCards=amountOfCards)
+
+
+        else:
+            return render_template("editCardsPage.html", cards=cards, amountOfCards=amountOfCards)
+
+
+
+    else:
+
+        return userNotLoggedIn()
+
+
+@app.route("/editThisCard/<int:cardID>", methods=["GET", "POST"])
+def editThisCard(cardID):
+    if loggedIn() == True:
+
+        #
+        card = DB.selectThisCard(cardID)
+        print(card[2])
+        print(session.get("user_id"))
+        print()
+        # Checking card belongs to user who is logged in
+        if card[2] == session.get("user_id"):
+
+            return render_template("editThisCard.html", card=card)
+            # Card belongs to user
+        else:
+            pass
+            #flash("Card does not exist", "danger")
+            #print("Here")
+            #return redirect(url_for("editCardsPage", cardID=1))
+
+
+    return userNotLoggedIn()
 
 
 @app.route("/logout")
@@ -268,6 +326,4 @@ def logout():
         return render_template("home.html")
 
     else:
-
-        flash("Please log in.", "danger")
-        return render_template("login.html")
+        return userNotLoggedIn()

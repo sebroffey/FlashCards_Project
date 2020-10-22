@@ -2,6 +2,20 @@
 {% set active_page = 'home' %}
 {% block body %}
     <div>
-        <h1>Welcome</h1>
+        <h1>Flashcards for the people</h1>
     </div>
+    <hr>
+    <div>
+        <p>Welcome to this absolutely incredible website, Please make yourself at home!
+            You can navigate the website using the navigation bar at the top, If you are new to the website you will be
+            able to create an account on the register page. Your details will be stored in a data base and your
+            password is protected by being stored as a hash. If you have been here before, login to access your
+            user page where you can create, edit, practice and test yourself on flashcards created by you!
+        </p>
+    </div>
+    <hr>
+    <div>
+        <img src="{{ url_for('static', filename='images/FlashCards.jpg') }}" height="640px" >
+    </div>
+    <hr>
 {% endblock %}

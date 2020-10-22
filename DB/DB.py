@@ -17,7 +17,7 @@ class openDB():
         print(self.db.rowcount)
 
 
-def countEntry(entry, column1, column2, mode):
+def countEntryInUsers(entry, column1, column2, mode):
     # Mode means does the query need to use = or LIKE, or just to count ALL entries
     # Created this function to minimise the amount of SQL statements dotted around everywhere
 
@@ -32,7 +32,7 @@ def countEntry(entry, column1, column2, mode):
             return db.fetchone()[0]
 
 
-def updateData(entries, columns):
+def updateUserData(entries, columns):
     with openDB(DB_Location) as db:
         for index in range(0, len(entries)):
             entry = (entries[index], session.get("user_id"))
@@ -52,7 +52,7 @@ def insertNewUser(data):
             data)
 
 
-def selectDataFromDB(entry, column1, column2, mode):
+def selectUserDataFromDB(entry, column1, column2, mode):
     entry = (entry,)
     with openDB(DB_Location) as db:
         db.execute("SELECT {} FROM Users WHERE {} {} ?".format(column1, column2, mode), entry)
@@ -64,9 +64,38 @@ def selectAllUserData(userID):
     userID = (userID,)
     with openDB(DB_Location) as db:
         db.execute("SELECT username, forename, surname, email FROM Users WHERE userID = ?", userID)
-        user = db.fetchone()
+        return db.fetchone()
 
 
+def selectUserCards(userID):
+    userID = (userID,)
+
+    with openDB(DB_Location) as db:
+        db.execute("SELECT question, answer, cardID FROM Cards WHERE userID = ?", userID)
+        return db.fetchall()
+
+def selectThisCard(cardID):
+    cardID = (cardID,)
+
+    with openDB(DB_Location) as db:
+        db.execute("SELECT question, answer, userID FROM Cards WHERE cardID = ?", cardID)
+        return db.fetchone()
+
+
+def updateUserCard(question, answer, cardID):
+    data = (question, answer, cardID)
+
+    with openDB(DB_Location) as db:
+        db.execute("UPDATE Cards SET question = ?, answer = ? WHERE cardID = ?", data)
+
+
+
+def countUserCards(userID):
+    userID = (userID,)
+
+    with openDB(DB_Location) as db:
+        db.execute("SELECT COUNT(cardID) FROM Cards WHERE userID = ?", userID)
+        return db.fetchone()[0]
 
 def innitializeUser_DB():
     with openDB("DB/User_Data.db") as db:
@@ -81,4 +110,15 @@ def innitializeUser_DB():
         userID INTEGER
         
         )''')
+
+        db.execute('''
+
+        CREATE TABLE IF NOT EXISTS Cards(
+        cardID INTEGER ,
+        question TEXT,
+        answer TEXT,
+        userID INTEGER 
+
+                )''')
+
 

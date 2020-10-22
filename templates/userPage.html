@@ -1,7 +1,21 @@
 {% extends "base.html" %}
-{% set active_page = 'home' %}
+{% set active_page = 'userPage' %}
+
+{% block title %}
+    Menu Page -
+{% endblock %}
+
 {% block body %}
     <div>
-        <h1>Welcome User</h1>
+        <h1>Menu</h1>
+    </div>
+    <hr>
+    <div>
+        <a href="{{ url_for('editUserDetails') }}">
+            <button type="button" class="btn btn-primary btn-lg">View Profile</button>
+        </a>
+        <button type="button" class="btn btn-primary btn-lg">Edit Cards</button>
+        <button type="button" class="btn btn-primary btn-lg">Practice Cards</button>
+        <button type="button" class="btn btn-secondary btn-lg">Test Cards</button>
     </div>
 {% endblock %}

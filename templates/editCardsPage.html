@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% set active_page = 'editCardsPage' %}
+
+{% block title %}
+    Edit Cards -
+{% endblock %}
+
+{% block body %}
+
+    {% if amountOfCards > 0 %}
+        <div><h1>Your Cards:</h1>
+
+            {% for card in cards %}
+                <a href="{{ url_for('editThisCard', cardID=card[2]) }}">
+                    <button type="button" class="btn btn-secondary">Edit This Card</button>
+                </a>
+                <table class = "table">
+                    <tr>
+                        <td>Question:</td>
+                        <td>{{ card[0] }}</td>
+                    </tr>
+                    <tr>
+                        <td>Answer:</td>
+                        <td>{{ card[1] }}</td>
+                    </tr>
+                </table>
+
+            {% endfor %}
+
+        </div>
+
+
+    {% else %}
+        <h1>You have no cards!</h1>
+    {% endif %}
+
+{% endblock %}
