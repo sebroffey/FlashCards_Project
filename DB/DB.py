@@ -134,3 +134,14 @@ def innitializeUser_DB():
         userID INTEGER 
 
                 )''')
+
+        # Test Data
+
+
+        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (1, 'User 1s question1', 'User 1s answer1', 1)")
+        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (2, 'User 1s question2', 'User 1s answer2', 1)")
+        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (3, 'User 1s question3', 'User 1s answer3', 1)")
+
+        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (4, 'User 2s question1', 'User 2s answer1', 2)")
+        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (5, 'User 2s question2', 'User 2s answer2', 2)")
+        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (6, 'User 2s question3', 'User 2s answer3', 2)")
