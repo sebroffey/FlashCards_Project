@@ -5,12 +5,11 @@
     <title>FlashCards{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css')}}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="containter">
+    <div class="container">
         {%if session.get("user_id") %}
             <img src="{{ url_for('static', filename='images/FlashCards.jpg') }}" height="64px" >
         {% else %}
@@ -51,7 +50,6 @@
                 </li>
             {% endif %}
         </ul>
-
     </div>
 </nav>
 

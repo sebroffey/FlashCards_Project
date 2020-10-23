@@ -8,7 +8,8 @@
 {% block body %}
 
     <div><h1>Edit Card</h1>
-       <form method="POST" action="{{ url_for('editCardsPage', cardID = 0) }}">
+
+       <form method="POST" action="{{ url_for('editCardsPage') }}">
            <div class="form-group">
                <label>Question</label>
                <input class="form-control" type="text" name="question" maxlength="250" minlength="1" required value="{{ card[0] }}">
@@ -18,6 +19,8 @@
                <label>Answer</label>
                <input class="form-control" type="text" name="answer" maxlength="250" minlength="1" required value="{{ card[1] }}">
            </div>
+
+           <input type="hidden" value="{{ card[2] }}" name="cardID">
 
            <hr>
            <input class="btn btn-primary form-control" type="submit" value="Submit Changes">

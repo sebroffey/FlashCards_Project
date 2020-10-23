@@ -1,8 +1,7 @@
-from itertools import count
-
 from flask import Flask, render_template, request, flash, redirect, url_for, session
-import _sqlite3
 from DB import DB
+import uuid
+import hashlib
 
 app = Flask(__name__)
 DB.innitializeUser_DB()
@@ -10,18 +9,15 @@ DB.innitializeUser_DB()
 app.config["SECRET_KEY"] = "secretkey"
 app.config["SESSION_PERMANENT"] = False
 
+
 # using code to hash passwords with salt https://www.pythoncentral.io/hashing-strings-with-python/
-import uuid
-import hashlib
-
-
 def hash_password(password):
     # uuid is used to generate a random number
     salt = uuid.uuid4().hex
     return hashlib.sha256(salt.encode() + password.encode()).hexdigest() + ':' + salt
 
 
-# Will return true or false
+# Checks if two passwords are the same, Will return true or false
 def check_password(hashed_password, entered_password):
     password, salt = hashed_password.split(':')
     if password == hashlib.sha256(salt.encode() + entered_password.encode()).hexdigest():
@@ -30,7 +26,7 @@ def check_password(hashed_password, entered_password):
         return False
 
 
-# session stores values in a dict
+# Prevents repeat code across program for checking if a user is logged in, returns a boolean.
 def loggedIn():
     if session.get("user_id"):
         return True
@@ -38,11 +34,14 @@ def loggedIn():
         return False
 
 
+# Prevents repeating code for when a user is redirected after not being logged in.
 def userNotLoggedIn():
     flash("Please log in.", "danger")
     return render_template("login.html")
 
 
+# Function called after user logs in or user details are changed
+# session stores values to be called whenever they need rendering on a html page.
 def refreshSession(userID):
     user = DB.selectAllUserData(userID)
 
@@ -53,24 +52,22 @@ def refreshSession(userID):
     session["user_id"] = userID
 
 
+# Function for when a user logs in which does all of the required steps to log a user in
+# including redirecting them to their user page.
 def validLogin(userID):
     refreshSession(userID)
     flash("Correct Password, Welcome " + session.get("forename"), "success")
     return render_template('userPage.html')
 
 
-# WEDNESDAY
-
-
-# Forget password change and delete user for now
-# Focus on implementing storing cards next
-# Maybe blueprints
-# Document using sphinx at some point
+#
+# APP ROUTES
+#
 
 
 @app.route("/")
 def home():
-    return render_template('home.html')
+    return logout()
 
 
 @app.route("/registerUser", methods=["GET", "POST"])
@@ -231,6 +228,7 @@ def editUserDetails():
         return userNotLoggedIn()
 
 
+# Not yet implemented
 @app.route("/changePassword")
 def changePassword():
     if loggedIn() == True:
@@ -239,6 +237,7 @@ def changePassword():
 
             print()
             # Not Finished This Link, will show a method error
+            return render_template("editUserDetails.html")
 
         else:
             return render_template("editUserDetails.html")
@@ -246,6 +245,7 @@ def changePassword():
         return userNotLoggedIn()
 
 
+# Not yet implemented
 @app.route("/deleteUser")
 def deleteUser():
     if loggedIn() == True:
@@ -254,6 +254,7 @@ def deleteUser():
 
             print()
             # Not Finished This Link, will show a method error
+            return render_template("editUserDetails.html")
 
         else:
             return render_template("editUserDetails.html")
@@ -261,29 +262,23 @@ def deleteUser():
         return userNotLoggedIn()
 
 
-@app.route("/editCardsPage/<int:cardID>", methods=["GET", "POST"])
-def editCardsPage(cardID):
+@app.route("/editCardsPage", methods=["GET", "POST"])
+def editCardsPage():
     if loggedIn() == True:
 
-        print("Here2")
+        if request.method == "POST":
+            question = request.form.get("question")
+            answer = request.form.get("answer")
+            cardID = request.form.get("cardID")
+            DB.updateUserCard(question, answer, cardID)
+
+            flash("Card Updated Successfully", "success")
+
         userID = session.get("user_id")
         cards = DB.selectUserCards(userID)
         amountOfCards = DB.countUserCards(userID)
 
-        if request.method == "POST":
-
-            print("here3")
-            question = request.form.get("question")
-            answer = request.form.get("answer")
-
-            DB.updateUserCard(question, answer, cardID)
-
-            flash("Card Updated Successfully", "success")
-            return render_template("editCardsPage.html", cards=cards, amountOfCards=amountOfCards)
-
-
-        else:
-            return render_template("editCardsPage.html", cards=cards, amountOfCards=amountOfCards)
+        return render_template("editCardsPage.html", cards=cards, amountOfCards=amountOfCards)
 
 
 
@@ -292,26 +287,22 @@ def editCardsPage(cardID):
         return userNotLoggedIn()
 
 
-@app.route("/editThisCard/<int:cardID>", methods=["GET", "POST"])
-def editThisCard(cardID):
+@app.route("/editThisCard", methods=["GET", "POST"])
+def editThisCard():
     if loggedIn() == True:
 
-        #
-        card = DB.selectThisCard(cardID)
-        print(card[2])
-        print(session.get("user_id"))
-        print()
-        # Checking card belongs to user who is logged in
-        if card[2] == session.get("user_id"):
+        if request.method == "POST":
 
-            return render_template("editThisCard.html", card=card)
-            # Card belongs to user
+            cardID = request.form.get("cardID")
+
+            if request.form.get("selection") == "edit":
+                card = DB.selectThisCard(cardID)
+                return render_template("editThisCard.html", card=card)
+
+            else:
+                return redirect(url_for('editCardsPage'))
         else:
-            pass
-            #flash("Card does not exist", "danger")
-            #print("Here")
-            #return redirect(url_for("editCardsPage", cardID=1))
-
+            return redirect(url_for('editCardsPage'))
 
     return userNotLoggedIn()
 
@@ -326,4 +317,4 @@ def logout():
         return render_template("home.html")
 
     else:
-        return userNotLoggedIn()
+        return render_template('home.html')

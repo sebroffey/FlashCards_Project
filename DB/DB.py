@@ -1,7 +1,10 @@
 import _sqlite3
 from flask import session, flash
+
 DB_Location = "DB/User_Data.db"
 
+
+# Custom context manager for making it easier when accessing database
 class openDB():
     def __init__(self, DBname):
         self.DBname = DBname
@@ -16,10 +19,11 @@ class openDB():
         self.db.close()
         print(self.db.rowcount)
 
-
+# Function which counts the amount of times an entry appears inside
+# of a column in the Users table which can use a condition.
 def countEntryInUsers(entry, column1, column2, mode):
+
     # Mode means does the query need to use = or LIKE, or just to count ALL entries
-    # Created this function to minimise the amount of SQL statements dotted around everywhere
 
     if mode == "ALL":
         with openDB(DB_Location) as db:
@@ -31,20 +35,22 @@ def countEntryInUsers(entry, column1, column2, mode):
             db.execute("SELECT COUNT({}) FROM Users WHERE {} {} ?".format(column1, column2, mode), entry)
             return db.fetchone()[0]
 
-
+# updates an entry in the User table for a user with the current user_id
+# uses arrays as parameters so when the program needs to update several
+# details it can just iterate across the array to update all of the values.
 def updateUserData(entries, columns):
+
     with openDB(DB_Location) as db:
         for index in range(0, len(entries)):
+
             entry = (entries[index], session.get("user_id"))
             column = columns[index]
-
             db.execute("UPDATE Users SET {} = ? WHERE userID = ?".format(column), entry)
 
             flash(column.capitalize() + " changed successfully to " + entry[0], "success")
 
-
-
-
+# Function which takes a data list with ordered values and inserts it into a new row in the Users table
+# to create a new user.
 def insertNewUser(data):
     with openDB(DB_Location) as db:
         db.execute(
@@ -52,6 +58,8 @@ def insertNewUser(data):
             data)
 
 
+# This function just returns data from the users table to the set conditions which depend of the
+# passed in parameters.
 def selectUserDataFromDB(entry, column1, column2, mode):
     entry = (entry,)
     with openDB(DB_Location) as db:
@@ -59,14 +67,15 @@ def selectUserDataFromDB(entry, column1, column2, mode):
         return db.fetchone()[0]
 
 
+#  This function returns all of a users data corresponding to the userID in the Users table
 def selectAllUserData(userID):
-
     userID = (userID,)
     with openDB(DB_Location) as db:
         db.execute("SELECT username, forename, surname, email FROM Users WHERE userID = ?", userID)
         return db.fetchone()
 
-
+# This function returns all of the cards in the table Cards which belong to a user with the userID passed in
+# as a parameter.
 def selectUserCards(userID):
     userID = (userID,)
 
@@ -74,6 +83,8 @@ def selectUserCards(userID):
         db.execute("SELECT question, answer, cardID FROM Cards WHERE userID = ?", userID)
         return db.fetchall()
 
+
+# This function returns one card with a matching cardID
 def selectThisCard(cardID):
     cardID = (cardID,)
 
@@ -82,6 +93,7 @@ def selectThisCard(cardID):
         return db.fetchone()
 
 
+# This function updates the question and answer of a card with the corresponding passed in cardID.
 def updateUserCard(question, answer, cardID):
     data = (question, answer, cardID)
 
@@ -89,7 +101,7 @@ def updateUserCard(question, answer, cardID):
         db.execute("UPDATE Cards SET question = ?, answer = ? WHERE cardID = ?", data)
 
 
-
+# This function counts how many cards a user has by counting how many cards have a matching userID.
 def countUserCards(userID):
     userID = (userID,)
 
@@ -97,6 +109,8 @@ def countUserCards(userID):
         db.execute("SELECT COUNT(cardID) FROM Cards WHERE userID = ?", userID)
         return db.fetchone()[0]
 
+
+# This function creates the DB and Tables if they do not exist.
 def innitializeUser_DB():
     with openDB("DB/User_Data.db") as db:
         db.execute('''
@@ -120,5 +134,3 @@ def innitializeUser_DB():
         userID INTEGER 
 
                 )''')
-
-

@@ -5,15 +5,19 @@
     Edit Cards -
 {% endblock %}
 
-{% block body %}
 
+{% block body %}
     {% if amountOfCards > 0 %}
         <div><h1>Your Cards:</h1>
 
             {% for card in cards %}
-                <a href="{{ url_for('editThisCard', cardID=card[2]) }}">
-                    <button type="button" class="btn btn-secondary">Edit This Card</button>
-                </a>
+
+                <form method="post" action="{{ url_for('editThisCard') }}">
+                    <input type="hidden" value="{{ card[2] }}" name="cardID">
+                    <input type="submit" name="selection" value="edit">
+                    <input type="submit" name="selection" value="delete">
+                </form>
+
                 <table class = "table">
                     <tr>
                         <td>Question:</td>
