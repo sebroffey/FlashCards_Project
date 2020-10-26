@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% set active_page = 'editUser' %}
+{% set active_page = 'editUserDetails' %}
 
 {% block title %}
     Edit Details -
@@ -56,15 +56,12 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-lg-7 my-5"><!Set width of form>
-            <form method="POST" action="{{ url_for('changePassword') }}">
-                <input class="btn btn-primary form-control" type="submit" value="Change Password">
-            </form>
-            <hr>
-            <form method="POST" action="{{ url_for('deleteUser') }}">
-                <input class="btn btn-primary form-control" type="submit" value="Delete User">
-            </form>
-        </div>
+        <a href="{{ url_for('changePassword') }}">
+            <button type="button" class="btn btn-primary btn-lg">Change Password</button>
+        </a>
+        <a href="{{ url_for('deleteUser') }}">
+            <button type="button" class="btn btn-primary btn-lg">Delete Account</button>
+        </a>
     </div>
 
 

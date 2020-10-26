@@ -19,10 +19,10 @@ class openDB():
         self.db.close()
         print(self.db.rowcount)
 
+
 # Function which counts the amount of times an entry appears inside
 # of a column in the Users table which can use a condition.
 def countEntryInUsers(entry, column1, column2, mode):
-
     # Mode means does the query need to use = or LIKE, or just to count ALL entries
 
     if mode == "ALL":
@@ -35,11 +35,11 @@ def countEntryInUsers(entry, column1, column2, mode):
             db.execute("SELECT COUNT({}) FROM Users WHERE {} {} ?".format(column1, column2, mode), entry)
             return db.fetchone()[0]
 
+
 # updates an entry in the User table for a user with the current user_id
 # uses arrays as parameters so when the program needs to update several
 # details it can just iterate across the array to update all of the values.
 def updateUserData(entries, columns):
-
     with openDB(DB_Location) as db:
         for index in range(0, len(entries)):
 
@@ -47,14 +47,16 @@ def updateUserData(entries, columns):
             column = columns[index]
             db.execute("UPDATE Users SET {} = ? WHERE userID = ?".format(column), entry)
 
-            flash(column.capitalize() + " changed successfully to " + entry[0], "success")
+            if column != "password":
+                flash(column.capitalize() + " changed successfully to " + entry[0], "success")
+
 
 # Function which takes a data list with ordered values and inserts it into a new row in the Users table
 # to create a new user.
 def insertNewUser(data):
     with openDB(DB_Location) as db:
         db.execute(
-            "INSERT INTO Users (username, password, forename, surname, email, userID) VALUES (?,?,?,?,?,?)",
+            "INSERT INTO Users (username, password, forename, surname, email) VALUES (?,?,?,?,?)",
             data)
 
 
@@ -73,6 +75,15 @@ def selectAllUserData(userID):
     with openDB(DB_Location) as db:
         db.execute("SELECT username, forename, surname, email FROM Users WHERE userID = ?", userID)
         return db.fetchone()
+
+
+# Deletes user from Users table and all cards with corresponding userID
+def deleteUser(userID):
+    userID = (userID,)
+    with openDB(DB_Location) as db:
+        db.execute("DELETE FROM Cards WHERE userID = ?", userID)
+        db.execute("DELETE FROM Users WHERE userID = ?", userID)
+
 
 # This function returns all of the cards in the table Cards which belong to a user with the userID passed in
 # as a parameter.
@@ -100,6 +111,25 @@ def updateUserCard(question, answer, cardID):
     with openDB(DB_Location) as db:
         db.execute("UPDATE Cards SET question = ?, answer = ? WHERE cardID = ?", data)
 
+# This function creates a card in the database
+def createCard(question, answer, userID):
+
+    data = (question, answer, userID)
+
+    with openDB(DB_Location) as db:
+        db.execute("INSERT INTO Cards (question, answer, userID) VALUES (?,?,?)", data)
+
+
+# This function deletes card with corresponding cardID
+def deleteCard(cardID):
+
+    cardID = (cardID,)
+
+    with openDB(DB_Location) as db:
+
+        db.execute("DELETE FROM Cards WHERE cardID = ?", cardID)
+
+
 
 # This function counts how many cards a user has by counting how many cards have a matching userID.
 def countUserCards(userID):
@@ -121,27 +151,28 @@ def innitializeUser_DB():
         forename TEXT,
         surname TEXT,
         email TEXT,
-        userID INTEGER
+        userID INTEGER PRIMARY KEY AUTOINCREMENT
+        
         
         )''')
 
         db.execute('''
 
         CREATE TABLE IF NOT EXISTS Cards(
-        cardID INTEGER ,
+        cardID INTEGER PRIMARY KEY AUTOINCREMENT,
         question TEXT,
         answer TEXT,
-        userID INTEGER 
+        userID INTEGER,
+        FOREIGN KEY (userID) REFERENCES Users(userID)
 
                 )''')
 
         # Test Data
 
 
-        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (1, 'User 1s question1', 'User 1s answer1', 1)")
-        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (2, 'User 1s question2', 'User 1s answer2', 1)")
-        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (3, 'User 1s question3', 'User 1s answer3', 1)")
-
-        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (4, 'User 2s question1', 'User 2s answer1', 2)")
-        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (5, 'User 2s question2', 'User 2s answer2', 2)")
-        db.execute("INSERT INTO Cards (cardID, question, answer, userID) VALUES (6, 'User 2s question3', 'User 2s answer3', 2)")
+        # db.execute("INSERT INTO Cards (question, answer, userID) VALUES ('User 1s question2', 'User 1s answer2', 1)")
+        # db.execute("INSERT INTO Cards (question, answer, userID) VALUES ('User 1s question3', 'User 1s answer3', 1)")
+        #
+        # db.execute("INSERT INTO Cards (question, answer, userID) VALUES ('User 2s question1', 'User 2s answer1', 2)")
+        # db.execute("INSERT INTO Cards (question, answer, userID) VALUES ('User 2s question2', 'User 2s answer2', 2)")
+        # db.execute("INSERT INTO Cards (question, answer, userID) VALUES ('User 2s question3', 'User 2s answer3', 2)")

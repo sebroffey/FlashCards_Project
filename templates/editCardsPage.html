@@ -12,22 +12,25 @@
 
             {% for card in cards %}
 
-                <form method="post" action="{{ url_for('editThisCard') }}">
-                    <input type="hidden" value="{{ card[2] }}" name="cardID">
-                    <input type="submit" name="selection" value="edit">
-                    <input type="submit" name="selection" value="delete">
-                </form>
 
-                <table class = "table">
-                    <tr>
-                        <td>Question:</td>
-                        <td>{{ card[0] }}</td>
-                    </tr>
-                    <tr>
-                        <td>Answer:</td>
-                        <td>{{ card[1] }}</td>
-                    </tr>
-                </table>
+                    <form method="post" action="{{ url_for('editThisCard') }}">
+                        <input type="hidden" value="{{ card[2] }}" name="cardID">
+                        <input type="submit" name="selection" value="edit">
+                        <input type="submit" name="selection" value="delete" onclick="alertCheck()">
+
+                    </form>
+
+                    <table class = "table">
+                        <tr>
+                            <td>Question:</td>
+                            <td>{{ card[0] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Answer:</td>
+                            <td>{{ card[1] }}</td>
+                        </tr>
+                    </table>
+
 
             {% endfor %}
 
@@ -37,5 +40,19 @@
     {% else %}
         <h1>You have no cards!</h1>
     {% endif %}
+    <a href="{{ url_for('createCard') }}">
+        <button type="button" class="btn btn-primary">Create a new card</button>
+    </a>
+
+
+    <script>
+        function alertCheck() {
+            alert("Are you sure?");
+
+        }
+
+
+    </script>
+
 
 {% endblock %}

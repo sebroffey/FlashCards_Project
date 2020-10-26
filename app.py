@@ -99,11 +99,8 @@ def registerUser():
                 countData = DB.countEntryInUsers(seachUsernameInput[0], "username", "username", "LIKE")
                 countString = str(countData)
 
-
-
                 if countData > 0:
                     username[0] = username[0] + countString
-
 
                 data = (username[0], passwordHash, forename, surname, email)
 
@@ -183,6 +180,13 @@ def editUserDetails():
 
         if request.method == "POST":
 
+            if request.form.get("delete") == "yes":
+                # Delete user
+
+                DB.deleteUser(session.get("user_id"))
+                flash("Account Deleted.", "success")
+                return logout()
+
             username = request.form.get("username")
             email = request.form.get("email")
             forename = request.form.get("forename")
@@ -229,35 +233,56 @@ def editUserDetails():
 
 
 # Not yet implemented
-@app.route("/changePassword")
+@app.route("/changePassword", methods=["GET", "POST"])
 def changePassword():
     if loggedIn() == True:
 
         if request.method == "POST":
 
-            print()
-            # Not Finished This Link, will show a method error
-            return render_template("editUserDetails.html")
+            if request.form.get("mode") == "input":
+
+                # Checks password in DB matches entered old password.
+                if check_password(DB.selectUserDataFromDB(session.get("user_id"), "password", "userID", "="),
+                                  request.form.get("oldPassword")):
+
+                    newPassword = hash_password(request.form.get("newPassword"))
+
+                    # Checking new password and confirm password match
+                    if check_password(newPassword, request.form.get("confirmPassword")):
+
+                        column = ["password"]
+                        entry = [newPassword]
+                        DB.updateUserData(entry, column)
+                        flash("Password updated", "success")
+
+                        return redirect(url_for("editUserDetails"))
+
+                    else:
+                        flash("New passwords do not match", "danger")
+                        return render_template("changePassword.html")
+
+                else:
+                    flash("Current password does not match entered old password.", "danger")
+                    return render_template("changePassword.html")
+            else:
+
+                return render_template("changePassword.html")
+
+
 
         else:
-            return render_template("editUserDetails.html")
+            return render_template("changePassword.html")
     else:
         return userNotLoggedIn()
 
 
 # Not yet implemented
-@app.route("/deleteUser")
+@app.route("/deleteUser", methods=["GET", "POST"])
 def deleteUser():
     if loggedIn() == True:
 
-        if request.method == "POST":
-
-            print()
-            # Not Finished This Link, will show a method error
-            return render_template("editUserDetails.html")
-
-        else:
-            return render_template("editUserDetails.html")
+        flash("Are you sure you want to delete your account?")
+        return render_template("editUserDetails.html", actionURL="url_for('deleteUser')")
     else:
         return userNotLoggedIn()
 
@@ -299,12 +324,46 @@ def editThisCard():
                 card = DB.selectThisCard(cardID)
                 return render_template("editThisCard.html", card=card)
 
+            elif request.form.get("selection") == "delete":
+
+                DB.deleteCard(cardID)
+                flash("Deleted card.", "success")
+                return redirect(url_for('editCardsPage'))
+
+
+
             else:
                 return redirect(url_for('editCardsPage'))
         else:
             return redirect(url_for('editCardsPage'))
 
     return userNotLoggedIn()
+
+
+@app.route("/createCard", methods=["GET", "POST"])
+def createCard():
+    if loggedIn() == True:
+
+        if request.method == "POST":
+
+            question = request.form.get("question")
+            answer = request.form.get("answer")
+            userID = session.get("user_id")
+            DB.createCard(question, answer, userID)
+
+            flash("Card created.", "success")
+            return redirect(url_for("createCard"))
+
+
+
+        else:
+
+            return render_template("createCard.html")
+
+
+
+    else:
+        return userNotLoggedIn()
 
 
 @app.route("/logout")

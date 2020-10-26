@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% set active_page = 'editCardsPage' %}
+
+{% block title %}
+    Create Cards -
+{% endblock %}
+
+{% block body %}
+
+    <div><h1>Create Card</h1>
+
+       <form method="POST" action="{{ url_for('createCard') }}">
+           <div class="form-group">
+               <label>Question</label>
+               <input class="form-control" type="text" name="question" maxlength="250" minlength="1" required>
+           </div>
+
+           <div class="form-group">
+               <label>Answer</label>
+               <input class="form-control" type="text" name="answer" maxlength="250" minlength="1" required>
+           </div>
+
+
+           <hr>
+           <input class="btn btn-primary form-control" type="submit" value="Create">
+       </form>
+    </div>
+    <hr>
+    <div>
+
+    <a href="{{ url_for('editCardsPage') }}">
+        <button type="button" class="btn btn-primary btn-lg">Return to Edit Cards</button>
+    </a>
+    </div>
+
+
+{% endblock %}
