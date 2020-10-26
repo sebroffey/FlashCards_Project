@@ -99,13 +99,13 @@ def registerUser():
                 countData = DB.countEntryInUsers(seachUsernameInput[0], "username", "username", "LIKE")
                 countString = str(countData)
 
-                userID = DB.countEntryInUsers(None, "userID", "userID", "ALL")
+
 
                 if countData > 0:
                     username[0] = username[0] + countString
 
-                userID = userID + 1
-                data = (username[0], passwordHash, forename, surname, email, userID)
+
+                data = (username[0], passwordHash, forename, surname, email)
 
                 # Insert New User into DB
                 DB.insertNewUser(data)
