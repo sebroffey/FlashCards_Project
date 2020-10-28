@@ -59,9 +59,9 @@
         <a href="{{ url_for('changePassword') }}">
             <button type="button" class="btn btn-primary btn-lg">Change Password</button>
         </a>
-        <a href="{{ url_for('deleteUser') }}">
-            <button type="button" class="btn btn-primary btn-lg">Delete Account</button>
-        </a>
+         <form method="post" onsubmit="return alertCheck()" action="{{ url_for('deleteUser') }}">
+            <button type="submit" class="btn btn-primary btn-lg">Delete Account</button>
+        </>
     </div>
 
 

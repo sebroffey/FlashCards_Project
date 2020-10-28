@@ -124,7 +124,6 @@ def loginUser():
         usernameOrEmail = request.form.get("username")
 
         if usernameOrEmail.find("@") != -1:
-
             # Log in by email
             occurrence = DB.countEntryInUsers(usernameOrEmail, "username", "email", "=")
 
@@ -180,12 +179,10 @@ def editUserDetails():
 
         if request.method == "POST":
 
-            if request.form.get("delete") == "yes":
-                # Delete user
 
-                DB.deleteUser(session.get("user_id"))
-                flash("Account Deleted.", "success")
-                return logout()
+
+
+
 
             username = request.form.get("username")
             email = request.form.get("email")
@@ -281,14 +278,17 @@ def changePassword():
 def deleteUser():
     if loggedIn() == True:
 
-        flash("Are you sure you want to delete your account?")
-        return render_template("editUserDetails.html", actionURL="url_for('deleteUser')")
+        DB.deleteUser(session.get("user_id"))
+        flash("Account Deleted.", "success")
+        return logout()
+
     else:
         return userNotLoggedIn()
 
 
 @app.route("/editCardsPage", methods=["GET", "POST"])
 def editCardsPage():
+    print("edit cards page reached")
     if loggedIn() == True:
 
         if request.method == "POST":
@@ -314,12 +314,13 @@ def editCardsPage():
 
 @app.route("/editThisCard", methods=["GET", "POST"])
 def editThisCard():
+    print("edit this card page reached")
     if loggedIn() == True:
 
         if request.method == "POST":
 
             cardID = request.form.get("cardID")
-
+            print(cardID)
             if request.form.get("selection") == "edit":
                 card = DB.selectThisCard(cardID)
                 return render_template("editThisCard.html", card=card)
@@ -335,6 +336,7 @@ def editThisCard():
             else:
                 return redirect(url_for('editCardsPage'))
         else:
+            print("Your getting redirected to edit cards page after being in edit this card :(")
             return redirect(url_for('editCardsPage'))
 
     return userNotLoggedIn()

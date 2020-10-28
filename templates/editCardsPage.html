@@ -13,12 +13,15 @@
             {% for card in cards %}
 
 
-                    <form method="post" action="{{ url_for('editThisCard') }}">
+                    <form method="post" onsubmit="return alertCheck()" action="{{ url_for('editThisCard') }}">
                         <input type="hidden" value="{{ card[2] }}" name="cardID">
                         <input type="submit" name="selection" value="edit">
-                        <input type="submit" name="selection" value="delete" onclick="alertCheck()">
+                        <input type="submit" name="selection" value="delete">
 
                     </form>
+
+
+
 
                     <table class = "table">
                         <tr>
@@ -45,14 +48,7 @@
     </a>
 
 
-    <script>
-        function alertCheck() {
-            alert("Are you sure?");
 
-        }
-
-
-    </script>
 
 
 {% endblock %}
