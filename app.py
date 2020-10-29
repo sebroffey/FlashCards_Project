@@ -368,6 +368,55 @@ def createCard():
         return userNotLoggedIn()
 
 
+
+@app.route("/practicePage", methods=["GET", "POST"])
+def practicePage():
+    if loggedIn() == True:
+
+        userID = session.get("user_id")
+        amountOfCards = DB.countUserCards(userID)
+        cards = DB.selectUserCards(userID)
+
+        if request.method == "POST":
+
+            currentCardID = request.form.get("currentCardID")
+            cardNumber = 0
+            nextCard = False
+
+            for card in cards:
+
+                if nextCard == True:
+                    return render_template("practicePage.html", card=card)
+                # If current card is the final card in cards, Go back to first card.
+                cardNumber = cardNumber + 1
+                print(cardNumber)
+                print(amountOfCards)
+                # if cardNumber == amountOfCards:
+                #     break
+                print(card[2])
+                print(currentCardID)
+                if str(card[2]) == currentCardID:
+                    nextCard = True
+                print(nextCard)
+
+            print("hrer")
+            return render_template("practicePage.html", card=cards[0])
+
+
+        else:
+
+            # Checks if the user actually has cards to practice with.
+            if amountOfCards > 0:
+                return render_template("practicePage.html", card=cards[0])
+            else:
+
+                flash("You currently have no cards to practice with.", "danger")
+                return redirect(url_for("editCardsPage"))
+
+
+
+
+
 @app.route("/logout")
 def logout():
     if session.get("user_id") is not None:

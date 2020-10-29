@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% set active_page = 'practicePage' %}
+{% block body %}
+    <div>
+        <h1>Practice</h1>
+    </div>
+    <div>
+        <p>Practice your cards before taking a test! Work through all of your stored cards using the practice page.
+        </p>
+    </div>
+
+    <div class="box">
+        <h4>{{ card[0] }}</h4>
+    </div>
+    <hr>
+    <div class="box" style="display: block">
+        <h4 id="answer">...</h4>
+    </div>
+
+
+
+    <button class="btn btn-primary" type="button" onclick="showAnswer()" id="show_hide">Show Answer</button>
+
+    <form method="POST" action="{{ url_for("practicePage") }}">
+        <input type="submit" class="btn btn-primary" value="Next Card">
+        <input type="hidden" value="{{ card[2] }}" name="currentCardID">
+    </form>
+
+    <a href="{{ url_for("userPage") }}">
+        <button class="btn btn-secondary" type="button">Finish</button>
+    </a>
+
+
+    <script>
+
+    function showAnswer(){
+        var button = document.getElementById("show_hide");
+        var answer = document.getElementById("answer");
+        if (answer.textContent === "...") {
+            answer.textContent = "{{ card[1] }}"
+            button.textContent = "Hide Answer";
+        }
+        else{
+            answer.textContent = "...";
+            button.textContent = "Show Answer";
+        }
+
+    }
+    </script>
+{% endblock %}
