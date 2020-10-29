@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% set active_page = 'test' %}
+
+{% block title %}
+    Test in progress -
+{% endblock %}
+
+{% block body %}
+
+
+    {% if index > cards|length %}
+        <form method="POST" action="{{ url_for("testInformation") }}">
+            <input type="submit" class="btn btn-primary" value="See Results">
+            <input type="hidden" value="{{ cards }}" name="cards">
+            <input type="hidden" value="{{ score }}" name="score">
+        </form>
+    {% else %}
+
+           <div>
+        <h1>Test in progress...</h1>
+    </div>
+    <div>
+        <p>Test results will be calculated at the end of the test. All of your cards are shuffled.
+        </p>
+    </div>
+    <div>
+    <h2>Question {{ index + 1 }}:</h2>
+    </div>
+    <div class="box">
+        <h4>{{ cards[index][0] }}</h4>
+    </div>
+    <hr>
+    <h4>Answer: </h4>
+
+
+
+
+        <form method="POST" action="{{ url_for("testInProgress") }}">
+            <input type="text" class="form-control" name="enteredAnswer" maxlength="250">
+            <input type="submit" class="btn btn-primary" value="Next Card">
+            <input type="hidden" datatype="number" value="{{ index }}" name="index">
+            <input type="hidden" value="{{ cards }}" name="cards">
+            <input type="hidden" value="{{ score }}" name="score">
+        </form>
+    {% endif %}
+
+    <a href="{{ url_for("userPage") }}">
+        <button class="btn btn-secondary" type="button">Quit Test</button>
+    </a>
+
+
+{% endblock %}

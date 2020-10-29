@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for, ses
 from DB import DB
 import uuid
 import hashlib
+import random
 
 app = Flask(__name__)
 DB.innitializeUser_DB()
@@ -178,11 +179,6 @@ def editUserDetails():
     if loggedIn() == True:
 
         if request.method == "POST":
-
-
-
-
-
 
             username = request.form.get("username")
             email = request.form.get("email")
@@ -368,7 +364,6 @@ def createCard():
         return userNotLoggedIn()
 
 
-
 @app.route("/practicePage", methods=["GET", "POST"])
 def practicePage():
     if loggedIn() == True:
@@ -412,9 +407,105 @@ def practicePage():
 
                 flash("You currently have no cards to practice with.", "danger")
                 return redirect(url_for("editCardsPage"))
+    else:
+        return userNotLoggedIn()
+
+
+@app.route("/testInformation", methods=["GET", "POST"])
+def testInformation():
+    if loggedIn() == True:
+
+        if request.method == "POST":
+
+            # Render test results
+
+            cards = request.form.get("cards")
+            scoreArray = request.form.get("score")
+            score = 0
+
+            for result in scoreArray:
+                if result == 1:
+                    score = score + 1
+
+
+            return render_template("testResults.html", cards=cards, scoreArray=scoreArray, score=score)
 
 
 
+        else:
+            return render_template("testInformation.html", amountOfCards=DB.countUserCards(session.get("user_id")))
+
+    else:
+        return userNotLoggedIn()
+
+
+@app.route("/testInProgress", methods=["GET", "POST"])
+def testInProgress():
+    if loggedIn() == True:
+
+        if request.method == "POST":
+
+            index = int(request.form.get("index"))
+            cards = request.form.get("cards")
+            score = request.form.get("score")
+            enteredAnswer = request.form.get("enteredAnswer")
+
+            # annoyingly form passes cards array as string hence this conversion of the string to an array:
+            cards = cards.replace("[","")
+            cards = cards.replace("(","")
+
+            cards = cards[0, len(cards)-2]
+
+            cardsConversionArray = cards.split("),")
+
+            amountOfCards = DB.countUserCards(session.get("user_id"))
+            data = 0
+            cardsArray = [[data for i in range(10)] for j in range(amountOfCards-1)]
+
+            for index in range(0, len(cardsConversionArray) - 1):
+
+                cardsConversionArray[index] = cardsConversionArray[index].trim()
+                singleCard = cardsConversionArray[index].split(", ")
+
+                for index2 in range(0, len(singleCard)-1):
+                    cardsArray[index][index2]
+
+
+            if enteredAnswer == cards[index][1]:
+                score = score.append(1)
+            else:
+                score = score.append(enteredAnswer)
+
+            index = index + 1
+
+            return render_template("testInProgress.html", index=index, cards=cards, score=score)
+
+
+
+
+
+
+
+
+
+
+
+        else:
+
+            # Loads and shuffles cards
+            userID = session.get("user_id")
+            cards = DB.selectUserCards(userID)
+            random.shuffle(cards)
+
+            # Creates score array
+            score = []
+            return render_template("testInProgress.html", index=0, cards=cards, score=score)
+
+
+
+
+    else:
+        return userNotLoggedIn()
 
 
 @app.route("/logout")

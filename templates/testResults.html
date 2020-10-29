@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% set active_page = "test" %}
+
+{% block title %}
+    Test Results -
+{% endblock %}
+
+{% block body %}
+
+    <h1>Test Results:</h1>
+    <hr>
+    <h2>You got {{ score }} out of {{ scoreArray|length }} correct!</h2>
+
+    {% if score == scoreArray|length %}
+        <h2>Perfect Score!</h2>
+    {% endif %}
+
+    {% for index in range(scoreArray|length) %}
+
+
+        {% if scoreArray[index] == 1 %}
+{#            Correct Question View#}
+
+            <table class = "table">
+                <tr style="color: lightgreen">
+                    <td>You Answered Correct.</td>
+                </tr>
+                        <tr>
+                            <td>Question:</td>
+                            <td>{{ card[index][0] }}</td>
+                        </tr>
+                        <tr>
+                            <td>Answer:</td>
+                            <td>{{ card[index][1] }}</td>
+                        </tr>
+            </table>
+        {% else %}
+{#            Incorrect Question View#}
+            <table class = "table">
+                    <tr style="color: darkred">
+                        <td>You Answered: {{ score[index] }}.</td>
+                    </tr>
+                    <tr>
+                        <td>Question:</td>
+                        <td>{{ card[index][0] }}</td>
+                    </tr>
+                    <tr>
+                        <td>Answer:</td>
+                        <td>{{ card[index][1] }}</td>
+                    </tr>
+                </table>
+        {% endif %}
+
+    {% endfor %}
+
+    <a href="{{ url_for('testInformation') }}">
+            <button type="button" class="btn btn-primary btn-lg">Redo Test!</button>
+        </a>
+        <a href="{{ url_for('userPage') }}">
+            <button type="button" class="btn btn-primary btn-lg">Home</button>
+        </a>
+        <a href="{{ url_for('practicePage') }}">
+            <button type="button" class="btn btn-primary btn-lg">Do some more practice</button>
+        </a>
+        <a href="{{ url_for('editCardsPage') }}">
+            <button type="button" class="btn btn-primary btn-lg">Edit my Cards</button>
+        </a>
+
+{% endblock %}

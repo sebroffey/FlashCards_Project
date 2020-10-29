@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set active_page = 'test' %}
+{% block title %}
+    Test -
+{% endblock %}
+{% block body %}
+    <div>
+        <h1>Test</h1>
+    </div>
+    <div>
+        <p>Here you can test your memory on the answers of your flashcards. All of your cards will be
+            included in the test and you will be scored afterwards. Please make sure you spell your answers correctly,
+            the same spelling you entered when creating the card. Be conscious on the use of your punctuation.
+        </p>
+        <p>You have a total of {{ amountOfCards }} cards to be tested on.</p>
+    </div>
+    <hr>
+    <div>
+        <a href="{{ url_for('testInProgress') }}">
+            <button type="button" class="btn btn-primary btn-lg">Start Test!</button>
+        </a>
+        <a href="{{ url_for('userPage') }}">
+            <button type="button" class="btn btn-primary btn-lg">Cancel</button>
+        </a>
+        <a href="{{ url_for('practicePage') }}">
+            <button type="button" class="btn btn-primary btn-lg">Do some more practice</button>
+        </a>
+        <a href="{{ url_for('createCard') }}">
+            <button type="button" class="btn btn-primary btn-lg">Make some more cards</button>
+        </a>
+    </div>
+{% endblock %}
