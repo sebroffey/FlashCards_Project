@@ -66,4 +66,41 @@
             <button type="button" class="btn btn-primary btn-lg">Edit my Cards</button>
         </a>
 
+
+    <script>
+
+    function returnCards(){
+
+        var cards = localStorage['cards'];
+        if (cards){
+            return JSON.parse(score);
+
+        }
+        else return false;
+    }
+
+    function returnScore(){
+
+        var score = localStorage['score'];
+        if (score){
+            return JSON.parse(score);
+
+        }
+        else return false;
+    }
+
+    function calculateScore(scores){
+
+        for answer in scores{
+
+            if answer === 1{
+                score = score + 1;
+            }
+
+
+
+        }
+    }
+
+    </script>
 {% endblock %}

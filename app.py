@@ -443,42 +443,19 @@ def testInformation():
 def testInProgress():
     if loggedIn() == True:
 
+        # Should change so this isnt repeated
+        amountOfCards = DB.countUserCards(session.get("user_id"))
+
         if request.method == "POST":
 
             index = int(request.form.get("index"))
-            cards = request.form.get("cards")
-            score = request.form.get("score")
             enteredAnswer = request.form.get("enteredAnswer")
-
-            # annoyingly form passes cards array as string hence this conversion of the string to an array:
-            cards = cards.replace("[","")
-            cards = cards.replace("(","")
-
-            cards = cards[0, len(cards)-2]
-
-            cardsConversionArray = cards.split("),")
-
-            amountOfCards = DB.countUserCards(session.get("user_id"))
-            data = 0
-            cardsArray = [[data for i in range(10)] for j in range(amountOfCards-1)]
-
-            for index in range(0, len(cardsConversionArray) - 1):
-
-                cardsConversionArray[index] = cardsConversionArray[index].trim()
-                singleCard = cardsConversionArray[index].split(", ")
-
-                for index2 in range(0, len(singleCard)-1):
-                    cardsArray[index][index2]
-
-
-            if enteredAnswer == cards[index][1]:
-                score = score.append(1)
-            else:
-                score = score.append(enteredAnswer)
-
             index = index + 1
 
-            return render_template("testInProgress.html", index=index, cards=cards, score=score)
+
+
+
+            return render_template("testInProgress.html", index=index, enteredAnswer=enteredAnswer, amountOfCards=amountOfCards)
 
 
 
@@ -497,9 +474,19 @@ def testInProgress():
             cards = DB.selectUserCards(userID)
             random.shuffle(cards)
 
+            #Need to rid of tuples for js
+
+            jsonArrayCards = []
+
+            for card in cards:
+
+                jsonCard = {"question": card[0], "answer": card[1], "cardID": card[2]}
+
+                jsonArrayCards.append(jsonCard)
+
             # Creates score array
-            score = []
-            return render_template("testInProgress.html", index=0, cards=cards, score=score)
+
+            return render_template("testInProgress.html", index=0, cards=jsonArrayCards, amountOfCards=amountOfCards)
 
 
 

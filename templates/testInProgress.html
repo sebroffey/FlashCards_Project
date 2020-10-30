@@ -7,12 +7,51 @@
 
 {% block body %}
 
+    {% if index == 0 %}
 
-    {% if index > cards|length %}
+
+        <script>
+
+            let cards = JSON.parse("{{ cards }}".replace(/&#39;/g,'"'));
+            localStorage['cards'] = JSON.stringify(cards);
+
+            let score = [];
+            localStorage['score'] = JSON.stringify(score);
+
+
+
+        </script>
+
+    {% else %}
+        <script>
+            let stringCards = localStorage['cards'];
+            let cards = JSON.parse(stringCards);
+
+            let stringScore = localStorage['score'];
+            let score = JSON.parse(stringScore);
+
+            if("{{ enteredAnswer }}" === cards["{{ index }}"].answer){
+
+                score.push(1);
+            }
+            else{
+
+                score.push("{{ enteredAnswer }}");
+            }
+
+            localStorage['score'] = JSON.stringify(score);
+        </script>
+    {% endif %}
+
+    <script>
+
+
+    </script>
+
+    {% if index >= amountOfCards %}
         <form method="POST" action="{{ url_for("testInformation") }}">
             <input type="submit" class="btn btn-primary" value="See Results">
-            <input type="hidden" value="{{ cards }}" name="cards">
-            <input type="hidden" value="{{ score }}" name="score">
+
         </form>
     {% else %}
 
@@ -27,7 +66,9 @@
     <h2>Question {{ index + 1 }}:</h2>
     </div>
     <div class="box">
-        <h4>{{ cards[index][0] }}</h4>
+        <h4><script type="text/javascript">
+        document.write(cards["{{ index }}"].question);
+      </script></h4>
     </div>
     <hr>
     <h4>Answer: </h4>
@@ -36,17 +77,19 @@
 
 
         <form method="POST" action="{{ url_for("testInProgress") }}">
-            <input type="text" class="form-control" name="enteredAnswer" maxlength="250">
+            <input type="text" class="form-control" name="enteredAnswer" maxlength="250" required>
             <input type="submit" class="btn btn-primary" value="Next Card">
-            <input type="hidden" datatype="number" value="{{ index }}" name="index">
-            <input type="hidden" value="{{ cards }}" name="cards">
-            <input type="hidden" value="{{ score }}" name="score">
+            <input type="hidden" value="{{ index }}" name="index">
+
+
+
         </form>
     {% endif %}
 
     <a href="{{ url_for("userPage") }}">
         <button class="btn btn-secondary" type="button">Quit Test</button>
     </a>
+
 
 
 {% endblock %}
