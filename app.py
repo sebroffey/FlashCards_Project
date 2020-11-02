@@ -418,17 +418,11 @@ def testInformation():
         if request.method == "POST":
 
             # Render test results
-
-            cards = request.form.get("cards")
-            scoreArray = request.form.get("score")
-            score = 0
-
-            for result in scoreArray:
-                if result == 1:
-                    score = score + 1
+            index = int(request.form.get("index"))
 
 
-            return render_template("testResults.html", cards=cards, scoreArray=scoreArray, score=score)
+
+            return render_template("testResults.html", index=index)
 
 
 

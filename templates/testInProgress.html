@@ -26,11 +26,13 @@
         <script>
             let stringCards = localStorage['cards'];
             let cards = JSON.parse(stringCards);
+            {#document.getElementById("cards").value = cards#}
 
             let stringScore = localStorage['score'];
             let score = JSON.parse(stringScore);
+            {#document.getElementById("scores").value = score#}
 
-            if("{{ enteredAnswer }}" === cards["{{ index }}"].answer){
+            if("{{ enteredAnswer }}" === cards["{{ index-1 }}"].answer){
 
                 score.push(1);
             }
@@ -40,6 +42,8 @@
             }
 
             localStorage['score'] = JSON.stringify(score);
+
+
         </script>
     {% endif %}
 
@@ -51,6 +55,11 @@
     {% if index >= amountOfCards %}
         <form method="POST" action="{{ url_for("testInformation") }}">
             <input type="submit" class="btn btn-primary" value="See Results">
+            <input type="hidden" value="{{ index }}" name="index">
+{#            <input type="hidden" id="cards" name="cards">#}
+{#            <input type="hidden" id="scores" name="scores">#}
+
+
 
         </form>
     {% else %}
@@ -78,7 +87,14 @@
 
         <form method="POST" action="{{ url_for("testInProgress") }}">
             <input type="text" class="form-control" name="enteredAnswer" maxlength="250" required>
-            <input type="submit" class="btn btn-primary" value="Next Card">
+
+            {% if index == amountOfCards %}
+                <input type="submit" class="btn btn-primary" value="Finish">
+
+            {% else %}
+                <input type="submit" class="btn btn-primary" value="Next Card">
+
+            {% endif %}
             <input type="hidden" value="{{ index }}" name="index">
 
 

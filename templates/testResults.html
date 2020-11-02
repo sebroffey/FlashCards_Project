@@ -7,51 +7,103 @@
 
 {% block body %}
 
+    <script>
+        let stringCards = localStorage['cards'];
+        let cards = JSON.parse(stringCards);
+
+        let stringScore = localStorage['score'];
+        let scoreArray = JSON.parse(stringScore);
+
+        let scoreLength = scoreArray.length;
+        let totalScore = 0;
+
+        for(let scores of scoreArray){
+
+            if(scores === 1){
+
+                totalScore = totalScore + 1;
+
+            }
+        }
+
+    console.log(cards);
+    console.log(scoreArray);
+    console.log(totalScore);
+
+
+    </script>
+
+
+
+
+
     <h1>Test Results:</h1>
     <hr>
-    <h2>You got {{ score }} out of {{ scoreArray|length }} correct!</h2>
-
-    {% if score == scoreArray|length %}
-        <h2>Perfect Score!</h2>
-    {% endif %}
-
-    {% for index in range(scoreArray|length) %}
+    <h2><script>document.write("You got " + totalScore + " out of " + scoreLength + " correct.");
+        if(totalScore === scoreLength){
+            document.write("\nPerfect Score!");
+        }
+    </script></h2>
 
 
-        {% if scoreArray[index] == 1 %}
-{#            Correct Question View#}
 
-            <table class = "table">
-                <tr style="color: lightgreen">
-                    <td>You Answered Correct.</td>
-                </tr>
-                        <tr>
-                            <td>Question:</td>
-                            <td>{{ card[index][0] }}</td>
-                        </tr>
-                        <tr>
-                            <td>Answer:</td>
-                            <td>{{ card[index][1] }}</td>
-                        </tr>
-            </table>
-        {% else %}
-{#            Incorrect Question View#}
-            <table class = "table">
-                    <tr style="color: darkred">
-                        <td>You Answered: {{ score[index] }}.</td>
-                    </tr>
-                    <tr>
-                        <td>Question:</td>
-                        <td>{{ card[index][0] }}</td>
-                    </tr>
-                    <tr>
-                        <td>Answer:</td>
-                        <td>{{ card[index][1] }}</td>
-                    </tr>
-                </table>
-        {% endif %}
+    {% for inx in range(0, index) %}
+
+        <p></p>
+        <table>
+            <tr>
+                <td id="rightOrWrongEntry{{ inx|string }}"></td>
+            </tr>
+            <tr>
+                <td>Question:</td>
+                <td id="question{{ inx|string }}"></td>
+            </tr>
+            <tr>
+                <td>Answer:</td>
+                <td id="answer{{ inx|string }}"></td>
+            </tr>
+            <tr>
+                <td id="youPutTitle{{ inx|string }}" >You Put:</td>
+                <td id="youPutText{{ inx|string }}">Default</td>
+            </tr>
+        </table>
+
+
+
+        <script>
+            if(scoreArray["{{ inx }}"] === 1){
+
+                document.getElementById("rightOrWrongEntry{{ inx|string }}").innerText = "Question {{ inx + 1 }} Correct!!";
+                document.getElementById("rightOrWrongEntry{{ inx|string }}").style.color = "green";
+                document.getElementById("question{{ inx|string }}").innerText = cards["{{ inx }}"].question;
+                document.getElementById("answer{{ inx|string }}").innerText = cards["{{ inx }}"].answer;
+                document.getElementById("youPutTitle{{ inx|string }}").style.display = "none";
+                document.getElementById("youPutText{{ inx|string }}").style.display = "none";
+
+            }
+            else{
+                document.getElementById("rightOrWrongEntry{{ inx|string }}").innerText = "Question {{ inx + 1 }} Incorrect";
+                document.getElementById("rightOrWrongEntry{{ inx|string }}").style.color = "red";
+                document.getElementById("question{{ inx|string }}").innerText = cards["{{ inx }}"].question;
+                document.getElementById("answer{{ inx|string }}").innerText = cards["{{ inx }}"].answer;
+                document.getElementById("youPutText{{ inx|string }}").innerText = scoreArray["{{ inx }}"];
+                document.getElementById("youPutTitle{{ inx|string }}").style.display = "data";
+                document.getElementById("youPutText{{ inx|string }}").style.display = "data";
+
+            }
+
+
+        </script>
+
+
+
+
+
 
     {% endfor %}
+
+
+    <P style="padding-bottom: 20px; padding-top: 20px ">Feature to save results will be implemented at a later date. These feature will allow users to store all of their results and be able to them view on demand.</P>
 
     <a href="{{ url_for('testInformation') }}">
             <button type="button" class="btn btn-primary btn-lg">Redo Test!</button>
@@ -67,40 +119,13 @@
         </a>
 
 
-    <script>
-
-    function returnCards(){
-
-        var cards = localStorage['cards'];
-        if (cards){
-            return JSON.parse(score);
-
-        }
-        else return false;
-    }
-
-    function returnScore(){
-
-        var score = localStorage['score'];
-        if (score){
-            return JSON.parse(score);
-
-        }
-        else return false;
-    }
-
-    function calculateScore(scores){
-
-        for answer in scores{
-
-            if answer === 1{
-                score = score + 1;
-            }
 
 
 
-        }
-    }
 
-    </script>
+
+
+
+
+
 {% endblock %}
