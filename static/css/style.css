@@ -4,6 +4,13 @@ body{
 
 .navbar-brand {
     padding-top: 0;
-    padding-bottom: 0;
-
+    padding-bottom: 5px;
 }
+
+h1{
+    padding-bottom: 5px;
+}
+div{
+    padding-top: 5px;
+}
+

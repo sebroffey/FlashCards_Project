@@ -23,8 +23,14 @@
         <ul class="navbar-nav ml-auto">
             {% if session.get("user_id") %}
 
-                <li class="nav-item">
-                    <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+                <li class="nav-item {{ 'active' if active_page == 'testPage' else '' }}">
+                    <a href="{{ url_for('practicePage') }}" class="nav-link">Test</a>
+                </li>
+                <li class="nav-item {{ 'active' if active_page == 'practicePage' else '' }}">
+                    <a href="{{ url_for('practicePage') }}" class="nav-link">Practice</a>
+                </li>
+                <li class="nav-item {{ 'active' if active_page == 'editCardsPage' else '' }}">
+                    <a href="{{ url_for('editCardsPage', cardID = 0) }}" class="nav-link">Edit Cards</a>
                 </li>
                 <li class="nav-item {{ 'active' if active_page == 'editUserDetails' else '' }}">
                     <a href="{{ url_for('editUserDetails') }}" class="nav-link">View Profile</a>
@@ -32,11 +38,8 @@
                 <li class="nav-item {{ 'active' if active_page == 'userPage' else '' }}">
                     <a href="{{ url_for('userPage') }}" class="nav-link">Menu</a>
                 </li>
-                <li class="nav-item {{ 'active' if active_page == 'editCardsPage' else '' }}">
-                    <a href="{{ url_for('editCardsPage', cardID = 0) }}" class="nav-link">Edit Cards</a>
-                </li>
-                <li class="nav-item {{ 'active' if active_page == 'practicePage' else '' }}">
-                    <a href="{{ url_for('practicePage') }}" class="nav-link">Practice</a>
+                <li class="nav-item">
+                    <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
                 </li>
             {% else %}
 

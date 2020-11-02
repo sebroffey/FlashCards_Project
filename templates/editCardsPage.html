@@ -15,8 +15,8 @@
 
                     <form method="post" onsubmit="return alertCheck()" action="{{ url_for('editThisCard') }}">
                         <input type="hidden" value="{{ card[2] }}" name="cardID">
-                        <input type="submit" name="selection" value="edit">
-                        <input type="submit" name="selection" value="delete">
+                        <input type="submit" name="selection" value="edit" class= "btn btn-secondary">
+                        <input type="submit" name="selection" value="delete" class="btn btn-secondary">
 
                     </form>
 
