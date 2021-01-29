@@ -24,7 +24,7 @@
             {% if session.get("user_id") %}
 
                 <li class="nav-item {{ 'active' if active_page == 'testPage' else '' }}">
-                    <a href="{{ url_for('practicePage') }}" class="nav-link">Test</a>
+                    <a href="{{ url_for('testInformation') }}" class="nav-link">Test</a>
                 </li>
                 <li class="nav-item {{ 'active' if active_page == 'practicePage' else '' }}">
                     <a href="{{ url_for('practicePage') }}" class="nav-link">Practice</a>

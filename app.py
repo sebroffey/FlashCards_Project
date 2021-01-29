@@ -3,6 +3,9 @@ from DB import DB
 import uuid
 import hashlib
 import random
+import time
+
+first_timestamp = time.perf_counter()
 
 app = Flask(__name__)
 DB.innitializeUser_DB()
@@ -500,3 +503,6 @@ def logout():
 
     else:
         return render_template('home.html')
+
+second_timestamp = time.perf_counter()
+print(second_timestamp - first_timestamp)

@@ -1,3 +1,6 @@
 *.db
 DB/User_Data.db
 .idea/
+venv
+env
+
