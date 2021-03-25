@@ -6,4 +6,4 @@ click
 MarkupSafe
 setuptools
 Flask
-flask_sqlalchemy
+flask-sqlalchemy

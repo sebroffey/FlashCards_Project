@@ -16,9 +16,6 @@ app.register_blueprint(user)
 
 
 
-@app.route("/")
-def home():
-    return logout()
 
 
 
