@@ -1,79 +1,46 @@
-from flask import session, flash
+from flask import session, flash, current_app
 from flask_sqlalchemy import SQLAlchemy
-
-
-
-
 
 
 # Custom context manager for making it easier when accessing database
 # https://pythonbasics.org/flask-sqlalchemy/
 class openDB():
-    def __init__(self, DBname):
-        self.db = SQLAlchemy(app)
-        
-        self.creation = False
+    def __init__(self):
+        self.session = SQLAlchemy(current_app)
 
-        if not engine.dialect.has_table(engine, "user_account"):
-            innitializeUserTable(self.metadata)
-            creation = True
-        if not engine.dialect.has_table(engine, "user_cards"):
-            innitializeCardsTable(self.metadata)    
-            creation = True
-        if creation:
-            self.metadata.create_all(self.engine)
     def __enter__(self):
-        return self.conn
+        return self.session.session
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.conn.commit()
-        # self.db.close()
-        # print(self.db.rowcount)
+        self.session.session.commit()
 
 
-def initializeDB(app):
+# Initialization of DB using flask sqlalchemy https://flask-sqlalchemy.palletsprojects.com/en/2.x/quickstart/
+def initializeDB():
     
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////DB/DB.db'
-    app.config['SQLALCHEMY_ECHO'] = True #For Debugging
+    current_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////DB/DB.session'
+    current_app.config['SQLALCHEMY_ECHO'] = True #For Debugging
     
-    db = SQLAlchemy(app)
+    session = SQLAlchemy(current_app)
 
-    class Users(db.Model):
-        username = db.Column("username", db.String)
-        password = db.Column("password", db.String)
-        forename = db.Column("forname", db.String)
-        surname = db.Column("surname", db.String)
-        email = db.Column("email", db.String)
-        userID = db.Column("userID", db.Integer, primary_key=True, autoincrement=True)
+    class Users(session.Model):
+        username = session.Column("username", session.String)
+        password = session.Column("password", session.String)
+        forename = session.Column("forname", session.String)
+        surname = session.Column("surname", session.String)
+        email = session.Column("email", session.String)
+        userID = session.Column("userID", session.Integer, primary_key=True, autoincrement=True)
+        
 
-        def __repr__(self):
-            return "<User %r>" % self.username
-
-
-    class Cards(db.Model):
-        question = db.Column("question", db.String)
-        answer = db.Column("answer", db.String)
-        cardID = db.Column("cardID", db.Integer, primary_key=True, autoincrement=True)
-        userID = db.Column("userID", db.Integer, autoincrement=True)
-
-        def __repr__(self):
-            return "<Card %r>" % self.cardID
-      
-      
-    db.create_all()
+    class Cards(session.Model):
+        question = session.Column("question", session.String)
+        answer = session.Column("answer", session.String)
+        cardID = session.Column("cardID", session.Integer, primary_key=True, autoincrement=True)
+        userID = session.Column(session.Integer, session.ForeignKey("user.userID"), nullable=False)
+        users = session.relationship("Users", backref="user", lazy=True)
 
 
-
-def innitializeCardsTable(metadata:MetaData):
-    Cards = Table(
-        "user_cards",
-        db.metadata,
-        Column("question", String)
-        Column("answer", String)
-        Column("userID", Integer, ForeignKey("user_account.userID"), nullable=False)
-        Column("cardID", Integer, primary_key=True, autoincrement=True)            
-    )
-    metadata.create_all()
+    session.create_all()
 
 
 
@@ -83,38 +50,30 @@ def countEntryInUsers(entry, column1, column2, mode):
     # Mode means does the query need to use = or LIKE, or just to count ALL entries
 
     if mode == "ALL":
-        with openDB(DB_Location) as db:
-            db.execute(text("SELECT COUNT({}) FROM Users".format(column1)))
-            return db.fetchone()[0]
+        with openDB(DB_Location) as session:
+            session.execute(text("SELECT COUNT({}) FROM Users".format(column1)))
+            return session.fetchone()[0]
     else:
         entry = (entry,)
-        with openDB(DB_Location) as db:
-            db.execute(text("SELECT COUNT({}) FROM Users WHERE {} {} ?".format(column1, column2, mode), entry))
-            return db.fetchone()[0]
+        with openDB(DB_Location) as session:
+            session.execute(text("SELECT COUNT({}) FROM Users WHERE {} {} ?".format(column1, column2, mode), entry))
+            return session.fetchone()[0]
 
 
 # updates an entry in the User table for a user with the current user_id
 # uses arrays as parameters so when the program needs to update several
 # details it can just iterate across the array to update all of the values.
-def updateUserData(entries, columns):
-    with openDB(DB_Location) as db:
-        for index in range(0, len(entries)):
-
-            entry = (entries[index], session.get("user_id"))
-            column = columns[index]
-            db.execute(text("UPDATE Users SET {} = ? WHERE userID = ?".format(column), entry))
-
-            if column != "password":
-                flash(column.capitalize() + " changed successfully to " + entry[0], "success")
+def updateUserData(attribute, user):
+    with openDB(DB_Location) as session:
+        user = session
 
 
 # Function which takes a data list with ordered values and inserts it into a new row in the Users table
 # to create a new user.
-def insertNewUser(data):
-    
-    stmt = insert(User).values(username=data[0], password=data[1], forename=data[2], surname=data[3], email=data[4])
-    with openDB(DB_Location) as db:
-        result = db.execute(stmt)
+def insertNewUser(user):
+
+    with openDB(DB_Location) as session:
+        session.add(user)
 
         
 
@@ -123,25 +82,25 @@ def insertNewUser(data):
 # passed in parameters.
 def selectUserDataFromDB(entry, column1, column2, mode):
     entry = (entry,)
-    with openDB(DB_Location) as db:
-        db.execute(text("SELECT {} FROM Users WHERE {} {} ?".format(column1, column2, mode), entry))
-        return db.fetchone()[0]
+    with openDB(DB_Location) as session:
+        session.execute(text("SELECT {} FROM Users WHERE {} {} ?".format(column1, column2, mode), entry))
+        return session.fetchone()[0]
 
 
 #  This function returns all of a users data corresponding to the userID in the Users table
 def selectAllUserData(userID):
     userID = (userID,)
-    with openDB(DB_Location) as db:
-        db.execute(text("SELECT username, forename, surname, email FROM Users WHERE userID = ?", userID))
-        return db.fetchone()
+    with openDB(DB_Location) as session:
+        session.execute(text("SELECT username, forename, surname, email FROM Users WHERE userID = ?", userID))
+        return session.fetchone()
 
 
 # Deletes user from Users table and all cards with corresponding userID
 def deleteUser(userID):
     userID = (userID,)
-    with openDB(DB_Location) as db:
-        db.execute(text("DELETE FROM Cards WHERE userID = ?", userID))
-        db.execute(text("DELETE FROM Users WHERE userID = ?", userID))
+    with openDB(DB_Location) as session:
+        session.execute(text("DELETE FROM Cards WHERE userID = ?", userID))
+        session.execute(text("DELETE FROM Users WHERE userID = ?", userID))
 
 
 # This function returns all of the cards in the table Cards which belong to a user with the userID passed in
@@ -149,34 +108,34 @@ def deleteUser(userID):
 def selectUserCards(userID):
     userID = (userID,)
 
-    with openDB(DB_Location) as db:
-        db.execute(text("SELECT question, answer, cardID FROM Cards WHERE userID = ?", userID))
-        return db.fetchall()
+    with openDB(DB_Location) as session:
+        session.execute(text("SELECT question, answer, cardID FROM Cards WHERE userID = ?", userID))
+        return session.fetchall()
 
 
 # This function returns one card with a matching cardID
 def selectThisCard(cardID):
     cardID = (cardID,)
 
-    with openDB(DB_Location) as db:
-        db.execute(text("SELECT question, answer, userID FROM Cards WHERE cardID = ?", cardID))
-        return db.fetchone()
+    with openDB(DB_Location) as session:
+        session.execute(text("SELECT question, answer, userID FROM Cards WHERE cardID = ?", cardID))
+        return session.fetchone()
 
 
 # This function updates the question and answer of a card with the corresponding passed in cardID.
 def updateUserCard(question, answer, cardID):
     data = (question, answer, cardID)
 
-    with openDB(DB_Location) as db:
-        db.execute(text("UPDATE Cards SET question = ?, answer = ? WHERE cardID = ?", data))
+    with openDB(DB_Location) as session:
+        session.execute(text("UPDATE Cards SET question = ?, answer = ? WHERE cardID = ?", data))
 
 # This function creates a card in the database
 def createCard(question, answer, userID):
 
     data = (question, answer, userID)
 
-    with openDB(DB_Location) as db:
-        db.execute(text("INSERT INTO Cards (question, answer, userID) VALUES (?,?,?)", data))
+    with openDB(DB_Location) as session:
+        session.execute(text("INSERT INTO Cards (question, answer, userID) VALUES (?,?,?)", data))
 
 
 # This function deletes card with corresponding cardID
@@ -184,9 +143,9 @@ def deleteCard(cardID):
 
     cardID = (cardID,)
 
-    with openDB(DB_Location) as db:
+    with openDB(DB_Location) as session:
 
-        db.execute(text("DELETE FROM Cards WHERE cardID = ?", cardID))
+        session.execute(text("DELETE FROM Cards WHERE cardID = ?", cardID))
 
 
 
@@ -194,19 +153,9 @@ def deleteCard(cardID):
 def countUserCards(userID):
     userID = (userID,)
 
-    with openDB(DB_Location) as db:
-        db.execute(text("SELECT COUNT(cardID) FROM Cards WHERE userID = ?", userID))
-        return db.fetchone()[0]
+    with openDB(DB_Location) as session:
+        session.execute(text("SELECT COUNT(cardID) FROM Cards WHERE userID = ?", userID))
+        return session.fetchone()[0]
 
 
-# This function creates the DB and Tables if they do not exist.
 
-        # Test Data
-
-
-        # db.execute(text("INSERT INTO Cards (question, answer, userID) VALUES ('User 1s question2', 'User 1s answer2', 1)")
-        # db.execute(text("INSERT INTO Cards (question, answer, userID) VALUES ('User 1s question3', 'User 1s answer3', 1)")
-        #
-        # db.execute(text("INSERT INTO Cards (question, answer, userID) VALUES ('User 2s question1', 'User 2s answer1', 2)")
-        # db.execute(text("INSERT INTO Cards (question, answer, userID) VALUES ('User 2s question2', 'User 2s answer2', 2)")
-        # db.execute(text("INSERT INTO Cards (question, answer, userID) VALUES ('User 2s question3', 'User 2s answer3', 2)")
