@@ -1,7 +1,7 @@
 import sys
 from data import DB
 
-class Users(session.Model):
+class User(session.Model):
 
     def __init__(username, password, forename, surname, email):
 
@@ -28,7 +28,7 @@ class Users(session.Model):
         except:
             print(sys.exc_info()[0])
 
-    class Cards(session.Model):
+    class Card(session.Model):
         question = session.Column("question", session.String)
         answer = session.Column("answer", session.String)
         cardID = session.Column("cardID", session.Integer, primary_key=True, autoincrement=True)

@@ -23,21 +23,23 @@ def initializeDB():
     
     session = SQLAlchemy(current_app)
 
-    class Users(session.Model):
+    class User(session.Model):
+        id = session.Column("userID", session.Integer, primary_key=True, autoincrement=True)
         username = session.Column("username", session.String)
         password = session.Column("password", session.String)
         forename = session.Column("forname", session.String)
         surname = session.Column("surname", session.String)
         email = session.Column("email", session.String)
-        userID = session.Column("userID", session.Integer, primary_key=True, autoincrement=True)
+
+        cards = session.relationship("cards", backref="user", lazy=True)
         
 
-    class Cards(session.Model):
+    class Card(session.Model):
+        id = session.Column("cardID", session.Integer, primary_key=True, autoincrement=True)
         question = session.Column("question", session.String)
         answer = session.Column("answer", session.String)
-        cardID = session.Column("cardID", session.Integer, primary_key=True, autoincrement=True)
-        userID = session.Column(session.Integer, session.ForeignKey("user.userID"), nullable=False)
-        users = session.relationship("Users", backref="user", lazy=True)
+        user_id = session.Column(session.Integer, session.ForeignKey("user.id"), nullable=False)
+        
 
 
     session.create_all()
