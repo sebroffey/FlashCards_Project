@@ -1,3 +1,6 @@
+from flask import Flask, render_template, session
+
+
 # using code to hash passwords with salt https://www.pythoncentral.io/hashing-strings-with-python/
 def hash_password(password):
     # uuid is used to generate a random number
@@ -30,19 +33,14 @@ def userNotLoggedIn():
 
 # Function called after user logs in or user details are changed
 # session stores values to be called whenever they need rendering on a html page.
-def refreshSession(userID):
-    user = DB.selectAllUserData(userID)
-
-    session["username"] = user[0]
-    session["forename"] = user[1]
-    session["surname"] = user[2]
-    session["email"] = user[3]
-    session["user_id"] = userID
+def refreshSession(user_id):
+    
+    session["user_id"] = user_id
 
 
 # Function for when a user logs in which does all of the required steps to log a user in
 # including redirecting them to their user page.
-def validLogin(userID):
-    refreshSession(userID)
+def validLogin(user):
+    refreshSession(user.id)
     flash("Correct Password, Welcome " + session.get("forename"), "success")
     return render_template('userPage.html')

@@ -1,4 +1,8 @@
-from flask import Flask, render_template, Blueprint
+from flask import Flask, render_template, Blueprint, session
+from services import model
+from web_api import auth
+import random
+
 
 card_routes = Blueprint("card_routes", __name__)
 
@@ -7,20 +11,26 @@ card_routes = Blueprint("card_routes", __name__)
 
 @card_routes.route("/editCardsPage", methods=["GET", "POST"])
 def editCardsPage():
-    print("edit cards page reached")
-    if loggedIn() == True:
+    
+    if auth.loggedIn():
+
+        userID = session.get("user_id")
 
         if request.method == "POST":
+
+            
             question = request.form.get("question")
             answer = request.form.get("answer")
             cardID = request.form.get("cardID")
-            DB.updateUserCard(question, answer, cardID)
-
+            #create card instance
+            card = model.Card(id=cardID)
+            card.__init__(question=question, answer=answer)
+            card.commit_changes()
             flash("Card Updated Successfully", "success")
 
-        userID = session.get("user_id")
-        cards = DB.selectUserCards(userID)
-        amountOfCards = DB.countUserCards(userID)
+        
+        cards = query.return_user_cards(userID)
+        amountOfCards = len(cards)
 
         return render_template("editCardsPage.html", cards=cards, amountOfCards=amountOfCards)
 
@@ -33,20 +43,22 @@ def editCardsPage():
 
 @card_routes.route("/editThisCard", methods=["GET", "POST"])
 def editThisCard():
-    print("edit this card page reached")
-    if loggedIn() == True:
+    
+    if auth.loggedIn():
 
         if request.method == "POST":
 
             cardID = request.form.get("cardID")
-            print(cardID)
+            #create card model
+            card = model.Card(id=cardID)
+
             if request.form.get("selection") == "edit":
-                card = DB.selectThisCard(cardID)
+                
                 return render_template("editThisCard.html", card=card)
 
             elif request.form.get("selection") == "delete":
 
-                DB.deleteCard(cardID)
+                card.delete_card()
                 flash("Deleted card.", "success")
                 return redirect(url_for('editCardsPage'))
 
@@ -55,7 +67,7 @@ def editThisCard():
             else:
                 return redirect(url_for('editCardsPage'))
         else:
-            print("Your getting redirected to edit cards page after being in edit this card :(")
+            
             return redirect(url_for('editCardsPage'))
 
     return userNotLoggedIn()
@@ -63,14 +75,18 @@ def editThisCard():
 
 @card_routes.route("/createCard", methods=["GET", "POST"])
 def createCard():
-    if loggedIn() == True:
+    if auth.loggedIn():
 
         if request.method == "POST":
-
+            
+            
             question = request.form.get("question")
             answer = request.form.get("answer")
             userID = session.get("user_id")
-            DB.createCard(question, answer, userID)
+            
+            #create model card
+            card = model.Card(question=question, answer=answer, user_id=userID)
+            card.commit_card()
 
             flash("Card created.", "success")
             return redirect(url_for("createCard"))
@@ -89,11 +105,11 @@ def createCard():
 
 @card_routes.route("/practicePage", methods=["GET", "POST"])
 def practicePage():
-    if loggedIn() == True:
+    if auth.loggedIn():
 
         userID = session.get("user_id")
-        amountOfCards = DB.countUserCards(userID)
-        cards = DB.selectUserCards(userID)
+        cards = queries.return_user_cards(userID)
+        
 
         if request.method == "POST":
 
@@ -107,24 +123,22 @@ def practicePage():
                     return render_template("practicePage.html", card=card)
                 # If current card is the final card in cards, Go back to first card.
                 cardNumber = cardNumber + 1
-                print(cardNumber)
-                print(amountOfCards)
+              
                 # if cardNumber == amountOfCards:
                 #     break
-                print(card[2])
-                print(currentCardID)
-                if str(card[2]) == currentCardID:
+                
+                if str(card.id) == currentCardID:
                     nextCard = True
-                print(nextCard)
+                
 
-            print("hrer")
+            
             return render_template("practicePage.html", card=cards[0])
 
 
         else:
 
             # Checks if the user actually has cards to practice with.
-            if amountOfCards > 0:
+            if cards:
                 return render_template("practicePage.html", card=cards[0])
             else:
 
@@ -136,7 +150,7 @@ def practicePage():
 
 @card_routes.route("/testInformation", methods=["GET", "POST"])
 def testInformation():
-    if loggedIn() == True:
+    if auth.loggedIn():
 
         if request.method == "POST":
 
@@ -150,18 +164,19 @@ def testInformation():
 
 
         else:
-            return render_template("testInformation.html", amountOfCards=DB.countUserCards(session.get("user_id")))
+            return render_template("testInformation.html", amountOfCards=len(queries.return_user_cards(session.get("user_id")))
 
     else:
-        return userNotLoggedIn()
+        return auth.userNotLoggedIn()
 
 
 @card_routes.route("/testInProgress", methods=["GET", "POST"])
 def testInProgress():
-    if loggedIn() == True:
+    if auth.loggedIn():
 
         # Should change so this isnt repeated
-        amountOfCards = DB.countUserCards(session.get("user_id"))
+        cards = queries.return_user_cards(session.get("user_id"))
+        amountOfCards = len(cards)
 
         if request.method == "POST":
 
@@ -188,7 +203,7 @@ def testInProgress():
 
             # Loads and shuffles cards
             userID = session.get("user_id")
-            cards = DB.selectUserCards(userID)
+            
             random.shuffle(cards)
 
             #Need to rid of tuples for js
@@ -197,7 +212,7 @@ def testInProgress():
 
             for card in cards:
 
-                jsonCard = {"question": card[0], "answer": card[1], "cardID": card[2]}
+                jsonCard = {"question": card.question, "answer": card.answer, "cardID": card.id}
 
                 jsonArrayCards.append(jsonCard)
 
@@ -209,5 +224,5 @@ def testInProgress():
 
 
     else:
-        return userNotLoggedIn()
+        return auth.userNotLoggedIn()
 

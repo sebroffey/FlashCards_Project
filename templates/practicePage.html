@@ -15,7 +15,7 @@
     </div>
 
     <div class="box">
-        <h4>{{ card[0] }}</h4>
+        <h4>{{ card.question }}</h4>
     </div>
     <hr>
     <div class="box" style="display: block">
@@ -28,7 +28,7 @@
 
     <form method="POST" action="{{ url_for("practicePage") }}">
         <input type="submit" class="btn btn-primary" value="Next Card">
-        <input type="hidden" value="{{ card[2] }}" name="currentCardID">
+        <input type="hidden" value="{{ card.id }}" name="currentCardID">
     </form>
 
     <a href="{{ url_for("userPage") }}">
@@ -42,7 +42,7 @@
         var button = document.getElementById("show_hide");
         var answer = document.getElementById("answer");
         if (answer.textContent === "...") {
-            answer.textContent = "{{ card[1] }}"
+            answer.textContent = "{{ card.answer }}"
             button.textContent = "Hide Answer";
         }
         else{
