@@ -1,6 +1,7 @@
 from flask import Flask, render_template, Blueprint, session
 from . import auth
-from services import model, queries
+from services import model, card
+from services import user as s_user
 
 
 auth_routes = Blueprint("auth_routes", __name__)
@@ -74,23 +75,22 @@ def loginUser():
         # Different methods of logging in, just for practice either by email or username.
         usernameOrEmail = request.form.get("username")
 
-        # Create user model for database querying
-        user = model.User()
+        
 
         if usernameOrEmail.find("@") != -1:
             # Log in by email
 
-            user.email = usernameOrEmail
+            
 
             
 
-            if queries.check_unique_email(user.email)
+            if queries.check_unique_email(user.email):
                 # No username or email found
                 flash("Email not registered.", "danger")
                 return render_template('login.html')
 
             else:
-                user = queries.load_user(True, user.email)
+                user = s_user.get_user_by_email(usernameOrEmail)
 
         else:
 

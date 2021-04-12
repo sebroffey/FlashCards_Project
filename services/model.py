@@ -1,26 +1,35 @@
 import sys
 from data import DB
 from flask import current_app
+from extensions import db
 
 
-class User(session.Model):
+class User(db.Model):
+    id = db.Column("userID", db.Integer, primary_key=True, autoincrement=True)
+    username = db.Column("username", db.String)
+    password = db.Column("password", db.String)
+    forename = db.Column("forname", db.String)
+    surname = db.Column("surname", db.String)
+    email = db.Column("email", db.String)
 
-    def __init__(username, password, forename, surname, email, id):
+    cards = db.relationship("cards", backref="user", lazy=True)
+
+    def __init__(self, user):
         
-        if username:
-            self.username = username
-        if password:
-            self.password = password
-        if forename:
-            self.forename = forename
-        if surname:
-            self.surname = surname
-        if email:
-            self.email = email
+        if user.username:
+            self.username = user.username
+        if user.password:
+            self.password = user.password
+        if user.forename:
+            self.forename = user.forename
+        if user.surname:
+            self.surname = user.surname
+        if user.email:
+            self.email = user.email
         
-        if id:
-            self.id = id
-            load_user()
+        if user.id:
+            self.id = user.id
+            
 
      
 
@@ -74,22 +83,27 @@ class User(session.Model):
 
  
         
-    class Card(session.Model):
+class Card(db.Model):
+    id = db.Column("cardID", db.Integer, primary_key=True, autoincrement=True)
+    question = db.Column("question", db.String)
+    answer = db.Column("answer", db.String)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
-        def __init__(question, answer, user_id, id):
-        
-            if question:
-                self.question = question
-            if answer:
-                self.answer = answer
-            if userID:
-                self.userID = userID
-
-            if id:
-                self.id = id
-                load_card()
-
+    def __init__(card):
     
+        if card.question:
+            self.question = card.question
+        if card.answer:
+            self.answer = card.answer
+        if card.userID:
+            self.userID = card.userID
+
+        if card.id:
+            self.id = card.id
+            
+
+
+
     def __repr__(self):
         return "<Card %r>" % self.id     
 

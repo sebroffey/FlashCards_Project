@@ -53,8 +53,9 @@ def editUserDetails():
 
             
             #loads user information into a user instance based on current id stored in session 
-            user = model.User(id = session["user_id"])
-            user.__init__(username=username, forename=forname, surname=surname, email=email)
+            
+            user = model.User(username=username, forename=forname, surname=surname, email=email, id=session["user_id"])
+            
             user.commit_changes()
             
             

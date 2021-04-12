@@ -4,6 +4,6 @@ Werkzeug
 itsdangerous
 click
 MarkupSafe
-setuptools
 Flask
 flask-sqlalchemy
+python-dotenv
